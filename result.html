@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Business Health Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f4f6f9;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1 {
+      color: #2b8a3e;
+      margin-bottom: 20px;
+    }
+    .report-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    }
+    .report-section h2 {
+      margin-top: 0;
+      color: #2b8a3e;
+    }
+    .percentage {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #333;
+    }
+    .insight {
+      margin-top: 10px;
+    }
+    .back-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #2b8a3e;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Your Business Health Report</h1>
+    <div id="report"></div>
+    <a href="index.html" class="back-button">Back to Form</a>
+  </div>
+
+  <script>
+    const categoryScores = JSON.parse(localStorage.getItem("categoryScores"));
+    const categoryTotals = JSON.parse(localStorage.getItem("categoryTotals"));
+
+    const insights = {
+      "Revenue & Profitability": {
+        high: "Your business is generating consistent revenue with healthy profit margins.",
+        medium: "Revenue is growing but there’s room to improve diversification and pricing strategy.",
+        low: "Profitability appears to be a challenge. Consider reviewing your pricing and customer base."
+      },
+      "Cash Flow & Liquidity": {
+        high: "You have strong control over cash inflows and outflows.",
+        medium: "Cash flow is manageable, but emergency reserves or forecasting could improve.",
+        low: "Cash crunch risk is high. Prioritize liquidity and better tracking of expenses."
+      },
+      "Cost & Expense Management": {
+        high: "Expenses are well-managed and aligned with growth.",
+        medium: "Some costs may be excessive or unmanaged. Consider budget reviews.",
+        low: "Poor cost controls may be impacting profitability. Optimize major cost drivers."
+      },
+      "Working Capital & Efficiency": {
+        high: "Your capital cycle is healthy and supports operational efficiency.",
+        medium: "There are moderate inefficiencies in payables, receivables or inventory turnover.",
+        low: "Critical inefficiencies exist in your working capital management. Immediate action is needed."
+      }
+    };
+
+    function getInterpretation(score) {
+      if (score >= 80) return "high";
+      if (score >= 50) return "medium";
+      return "low";
+    }
+
+    const reportDiv = document.getElementById("report");
+
+    for (const category in categoryScores) {
+      const score = categoryScores[category];
+      const total = categoryTotals[category];
+      const percent = total ? Math.round((score / total) * 100) : 0;
+      const level = getInterpretation(percent);
+      const section = document.createElement("div");
+      section.className = "report-section";
+      section.innerHTML = `
+        <h2>${category}</h2>
+        <p class="percentage">Score: ${percent}%</p>
+        <div class="insight">${insights[category][level]}</div>
+      `;
+      reportDiv.appendChild(section);
+    }
+  </script>
+</body>
+</html>

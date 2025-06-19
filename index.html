@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Business Health Assessment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #2b8a3e;
+    }
+    .category-section {
+      margin-bottom: 40px;
+    }
+    .category-section h2 {
+      background-color: #2b8a3e;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .question-block {
+      background: #ffffff;
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .question-number {
+      font-weight: bold;
+      color: #2b8a3e;
+      margin-bottom: 8px;
+    }
+    .options {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .submit-button {
+      margin-top: 30px;
+      padding: 12px 20px;
+      background-color: #2b8a3e;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Business Health Assessment</h1>
+    <form id="assessmentForm"></form>
+  </div>
+
+  <script>
+    const questionsByCategory = {
+      "Revenue & Profitability": [
+        "Are you getting more sales or customers than you did last year?",
+        "Are you less dependent on a single customer or product?",
+        "Have your profit margins improved in the past 12 months?",
+        "Could your business stay profitable if revenue dropped by 10%?",
+        "Do you track revenue trends by product or region?",
+        "Is your pricing strategy aligned with market position?",
+        "Are you reviewing financial reports to assess profit trends?"
+      ],
+      "Cash Flow & Liquidity": [
+        "Can you handle regular expenses without borrowing?",
+        "Do you have emergency savings for slow months?",
+        "Do you track monthly cash inflows and outflows?",
+        "Do you consistently generate positive cash flow?",
+        "Can you quickly access funds in an emergency?",
+        "Do you forecast cash flow monthly?",
+        "Are personal and business finances separated?",
+        "Do you avoid credit for routine expenses?"
+      ],
+      "Cost & Expense Management": [
+        "Are most costs contributing to growth or efficiency?",
+        "Can you reduce costs quickly if needed?",
+        "Do you follow a budget to track expenses?",
+        "Do you optimize supplier/vendor contracts regularly?",
+        "Do you know your top 3 cost drivers?",
+        "Do you perform break-even analysis before big expenses?",
+        "Do you review expenses monthly?"
+      ],
+      "Working Capital & Efficiency": [
+        "Do your customers pay on time?",
+        "Can you pay vendors on time without waiting for cash in?",
+        "Can you operate for months if sales drop suddenly?",
+        "Are invoices paid within 30 days?",
+        "Is your inventory level balanced (not overstocked)?",
+        "Do you track how fast you convert inventory to cash?",
+        "Are receivables/payables optimized to prevent gaps?",
+        "Do you monitor short-term assets and liabilities monthly?"
+      ]
+    };
+
+    const form = document.getElementById("assessmentForm");
+    let questionNumber = 1;
+
+    for (const [category, questions] of Object.entries(questionsByCategory)) {
+      const section = document.createElement("div");
+      section.className = "category-section";
+      section.innerHTML = `<h2>${category}</h2>`;
+      
+      questions.forEach((text) => {
+        const qBlock = document.createElement("div");
+        qBlock.className = "question-block";
+        qBlock.innerHTML = `
+          <div class="question-number">Q${questionNumber}. ${text}</div>
+          <div class="options">
+            <label><input type="radio" name="q${questionNumber}" value="Yes" required> Yes</label>
+            <label><input type="radio" name="q${questionNumber}" value="No"> No</label>
+            <label><input type="radio" name="q${questionNumber}" value="In Process"> In Process</label>
+          </div>
+        `;
+        section.appendChild(qBlock);
+        questionNumber++;
+      });
+
+      form.appendChild(section);
+    }
+
+    const submitBtn = document.createElement("button");
+    submitBtn.type = "submit";
+    submitBtn.className = "submit-button";
+    submitBtn.textContent = "Submit";
+    form.appendChild(submitBtn);
+
+    const weights = {};
+    for (let i = 1; i < questionNumber; i++) {
+      weights[`q${i}`] = 2;
+    }
+
+    const categoryMap = {
+      "Revenue & Profitability": [1,2,3,4,5,6,7],
+      "Cash Flow & Liquidity": [1,2,3,4,5,6,7],
+      "Cost & Expense Management": [1,2,3,4,5,6,7],
+      "Working Capital & Efficiency": [1,2,3,4,5,6,7]
+    };
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const categoryScores = {};
+      const categoryTotals = {};
+
+      for (const [cat, qnums] of Object.entries(categoryMap)) {
+        categoryScores[cat] = 0;
+        categoryTotals[cat] = 0;
+
+        qnums.forEach((qnum) => {
+          const key = `q${qnum}`;
+          const selected = form.querySelector(`input[name="${key}"]:checked`);
+          if (selected) {
+            const weight = weights[key];
+            categoryTotals[cat] += weight;
+            if (selected.value === "Yes") categoryScores[cat] += weight;
+            else if (selected.value === "In Process") categoryScores[cat] += weight * 0.5;
+          }
+        });
+      }
+
+      localStorage.setItem("categoryScores", JSON.stringify(categoryScores));
+      localStorage.setItem("categoryTotals", JSON.stringify(categoryTotals));
+      window.location.href = "result.html";
+    });
+  </script>
+</body>
+</html>
