@@ -53,6 +53,16 @@
       font-size: 1rem;
       color: #555;
     }
+    .overall-score {
+      background: #d1f2d1;
+      padding: 20px;
+      border: 2px dashed #2b8a3e;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 1.3rem;
+      color: #1e5631;
+    }
     .back-button {
       display: inline-block;
       padding: 12px 24px;
@@ -75,6 +85,7 @@
   <header>BizVitals 360 - Business Health Report</header>
   <div class="container">
     <h1>Your Business Health Report</h1>
+    <div id="overall"></div>
     <div id="report"></div>
     <a href="index.html" class="back-button">Back to Form</a>
   </div>
@@ -115,13 +126,21 @@
       return "low";
     }
 
-    function toRoman(num) {
-      const romans = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
-      return romans[num - 1] || num;
+    function calculateOverallScore(scores, totals) {
+      let totalScore = 0, totalPossible = 0;
+      for (const key in scores) {
+        totalScore += scores[key];
+        totalPossible += totals[key];
+      }
+      return totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
     }
 
+    const overallDiv = document.getElementById("overall");
     const reportDiv = document.getElementById("report");
     let categoryIndex = 1;
+
+    const overallScore = calculateOverallScore(categoryScores, categoryTotals);
+    overallDiv.innerHTML = `<div class="overall-score">Overall Business Health Score: <strong>${overallScore}%</strong></div>`;
 
     for (const category in categoryScores) {
       const score = categoryScores[category];
@@ -131,7 +150,7 @@
       const section = document.createElement("div");
       section.className = "report-section";
       section.innerHTML = `
-        <h2>(${toRoman(categoryIndex)}) ${category}</h2>
+        <h2>(${categoryIndex}) ${category}</h2>
         <p class="percentage">Score: ${percent}%</p>
         <div class="insight">${insights[category][level]}</div>
       `;
