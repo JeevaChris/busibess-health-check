@@ -1,58 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business Health Report</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BizVitals 360 - Your Results</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f0f4f8, #d9e4f5);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #2b8a3e;
+      color: white;
+      padding: 20px 40px;
+      text-align: center;
+      font-size: 1.5rem;
     }
     .container {
-      max-width: 900px;
-      margin: auto;
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
     }
     h1 {
+      text-align: center;
       color: #2b8a3e;
-      margin-bottom: 20px;
+      margin-bottom: 40px;
     }
     .report-section {
-      background: white;
-      border-radius: 8px;
+      background-color: #e9f7ec;
+      border-left: 6px solid #2b8a3e;
       padding: 20px;
-      margin-bottom: 25px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .report-section h2 {
-      margin-top: 0;
+      margin: 0 0 10px;
       color: #2b8a3e;
     }
     .percentage {
       font-size: 1.5em;
       font-weight: bold;
-      color: #333;
+      color: #222;
     }
     .insight {
       margin-top: 10px;
+      font-size: 1rem;
+      color: #555;
     }
     .back-button {
       display: inline-block;
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: #2b8a3e;
       color: white;
-      border-radius: 5px;
       text-decoration: none;
+      border-radius: 6px;
+      margin-top: 30px;
+      font-size: 1rem;
+    }
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      padding: 20px;
+      color: #999;
     }
   </style>
 </head>
 <body>
+  <header>BizVitals 360 - Business Health Report</header>
   <div class="container">
     <h1>Your Business Health Report</h1>
     <div id="report"></div>
     <a href="index.html" class="back-button">Back to Form</a>
   </div>
+  <footer>
+    &copy; 2025 BizVitals360. All rights reserved.
+  </footer>
 
   <script>
     const categoryScores = JSON.parse(localStorage.getItem("categoryScores"));
@@ -87,7 +115,13 @@
       return "low";
     }
 
+    function toRoman(num) {
+      const romans = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+      return romans[num - 1] || num;
+    }
+
     const reportDiv = document.getElementById("report");
+    let categoryIndex = 1;
 
     for (const category in categoryScores) {
       const score = categoryScores[category];
@@ -97,11 +131,12 @@
       const section = document.createElement("div");
       section.className = "report-section";
       section.innerHTML = `
-        <h2>${category}</h2>
+        <h2>(${toRoman(categoryIndex)}) ${category}</h2>
         <p class="percentage">Score: ${percent}%</p>
         <div class="insight">${insights[category][level]}</div>
       `;
       reportDiv.appendChild(section);
+      categoryIndex++;
     }
   </script>
 </body>
