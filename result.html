@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BizVitals 360 - Your Results</title>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -94,69 +95,105 @@
   </footer>
 
   <script>
-    const categoryScores = JSON.parse(localStorage.getItem("categoryScores"));
-    const categoryTotals = JSON.parse(localStorage.getItem("categoryTotals"));
+    window.onload = function () {
+      emailjs.init("XAgK2CQgg4kAl2Az3"); // Your public key
 
-    const insights = {
-      "Revenue & Profitability": {
-        high: "Your business is generating consistent revenue with healthy profit margins.",
-        medium: "Revenue is growing but there’s room to improve diversification and pricing strategy.",
-        low: "Profitability appears to be a challenge. Consider reviewing your pricing and customer base."
-      },
-      "Cash Flow & Liquidity": {
-        high: "You have strong control over cash inflows and outflows.",
-        medium: "Cash flow is manageable, but emergency reserves or forecasting could improve.",
-        low: "Cash crunch risk is high. Prioritize liquidity and better tracking of expenses."
-      },
-      "Cost & Expense Management": {
-        high: "Expenses are well-managed and aligned with growth.",
-        medium: "Some costs may be excessive or unmanaged. Consider budget reviews.",
-        low: "Poor cost controls may be impacting profitability. Optimize major cost drivers."
-      },
-      "Working Capital & Efficiency": {
-        high: "Your capital cycle is healthy and supports operational efficiency.",
-        medium: "There are moderate inefficiencies in payables, receivables or inventory turnover.",
-        low: "Critical inefficiencies exist in your working capital management. Immediate action is needed."
+      const categoryScores = JSON.parse(localStorage.getItem("categoryScores") || "{}");
+      const categoryTotals = JSON.parse(localStorage.getItem("categoryTotals") || "{}");
+
+      const userEmail = "thalajeeva252@gmail.com";
+
+      const insights = {
+        "Revenue & Profitability": {
+          high: "Your business is generating consistent revenue with healthy profit margins.",
+          medium: "Revenue is growing but there’s room to improve diversification and pricing strategy.",
+          low: "Profitability appears to be a challenge. Consider reviewing your pricing and customer base."
+        },
+        "Cash Flow & Liquidity": {
+          high: "You have strong control over cash inflows and outflows.",
+          medium: "Cash flow is manageable, but emergency reserves or forecasting could improve.",
+          low: "Cash crunch risk is high. Prioritize liquidity and better tracking of expenses."
+        },
+        "Cost & Expense Management": {
+          high: "Expenses are well-managed and aligned with growth.",
+          medium: "Some costs may be excessive or unmanaged. Consider budget reviews.",
+          low: "Poor cost controls may be impacting profitability. Optimize major cost drivers."
+        },
+        "Working Capital & Efficiency": {
+          high: "Your capital cycle is healthy and supports operational efficiency.",
+          medium: "There are moderate inefficiencies in payables, receivables or inventory turnover.",
+          low: "Critical inefficiencies exist in your working capital management. Immediate action is needed."
+        }
+      };
+
+      function getInterpretation(score) {
+        if (score >= 80) return "high";
+        if (score >= 50) return "medium";
+        return "low";
+      }
+
+      function calculateOverallScore(scores, totals) {
+        let totalScore = 0, totalPossible = 0;
+        for (const key in scores) {
+          totalScore += scores[key];
+          totalPossible += totals[key];
+        }
+        return totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+      }
+
+      const overallDiv = document.getElementById("overall");
+      const reportDiv = document.getElementById("report");
+      let categoryIndex = 1;
+
+      const overallScore = calculateOverallScore(categoryScores, categoryTotals);
+      overallDiv.innerHTML = `<div class="overall-score">Overall Business Health Score: <strong>${overallScore}%</strong></div>`;
+
+      let emailSummary = `<div style="font-family: system-ui, sans-serif, Arial; font-size: 12px">
+        <div>A message by BizVitals360 has been received. Kindly respond at your earliest convenience.</div>
+        <div style="margin-top: 20px; padding: 15px 0; border-width: 1px 0; border-style: dashed; border-color: lightgrey;">
+          <table role="presentation"><tr>
+            <td style="vertical-align: top">
+              <div style="padding: 6px 10px; margin: 0 10px; background-color: aliceblue; border-radius: 5px; font-size: 26px;" role="img">
+                &#x1F464;
+              </div>
+            </td>
+            <td style="vertical-align: top">
+              <div style="color: #2c3e50; font-size: 16px"><strong>BizVitals360</strong></div>
+              <div style="color: #cccccc; font-size: 13px">${new Date().toLocaleString()}</div>
+              <p style="font-size: 16px">
+                Overall Score: ${overallScore}%<br><br>`;
+
+      for (const category in categoryScores) {
+        const score = categoryScores[category];
+        const total = categoryTotals[category];
+        const percent = total ? Math.round((score / total) * 100) : 0;
+        const level = getInterpretation(percent);
+        const section = document.createElement("div");
+        section.className = "report-section";
+        section.innerHTML = `
+          <h2>(${categoryIndex}) ${category}</h2>
+          <p class="percentage">Score: ${percent}%</p>
+          <div class="insight">${insights[category][level]}</div>`;
+        reportDiv.appendChild(section);
+
+        emailSummary += `(${categoryIndex}) ${category}: ${percent}% - ${insights[category][level]}<br><br>`;
+        categoryIndex++;
+      }
+
+      emailSummary += `</p></td></tr></table></div></div>`;
+
+      if (userEmail) {
+        emailjs.send("service_4bgk6br", "template_alternatebiz360", {
+          to_email: userEmail,
+          from_name: "BizVitals360",
+          message: emailSummary
+        }).then(() => {
+          console.log("✅ Email sent successfully to:", userEmail);
+        }).catch((err) => {
+          console.error("❌ Email failed to send:", err);
+        });
       }
     };
-
-    function getInterpretation(score) {
-      if (score >= 80) return "high";
-      if (score >= 50) return "medium";
-      return "low";
-    }
-
-    function calculateOverallScore(scores, totals) {
-      let totalScore = 0, totalPossible = 0;
-      for (const key in scores) {
-        totalScore += scores[key];
-        totalPossible += totals[key];
-      }
-      return totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
-    }
-
-    const overallDiv = document.getElementById("overall");
-    const reportDiv = document.getElementById("report");
-    let categoryIndex = 1;
-
-    const overallScore = calculateOverallScore(categoryScores, categoryTotals);
-    overallDiv.innerHTML = `<div class="overall-score">Overall Business Health Score: <strong>${overallScore}%</strong></div>`;
-
-    for (const category in categoryScores) {
-      const score = categoryScores[category];
-      const total = categoryTotals[category];
-      const percent = total ? Math.round((score / total) * 100) : 0;
-      const level = getInterpretation(percent);
-      const section = document.createElement("div");
-      section.className = "report-section";
-      section.innerHTML = `
-        <h2>(${categoryIndex}) ${category}</h2>
-        <p class="percentage">Score: ${percent}%</p>
-        <div class="insight">${insights[category][level]}</div>
-      `;
-      reportDiv.appendChild(section);
-      categoryIndex++;
-    }
   </script>
 </body>
 </html>
