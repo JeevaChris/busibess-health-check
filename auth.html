@@ -3,117 +3,326 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BizVitals 360 - Login / Signup</title>
-  <link rel="stylesheet" href="style.css">
+  <title>BizVitals 360 - Login & Assessment</title>
   <style>
+    :root {
+      --primary: #2b8a3e;
+      --light-bg: #f5f9f6;
+      --border: #d2e6d2;
+      --text-dark: #1a1a1a;
+      --dark-bg: #1e1e1e;
+      --dark-card: #2b2b2b;
+      --dark-text: #f5f5f5;
+    }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--light-bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text-dark);
+      transition: background 0.3s, color 0.3s;
     }
-    .auth-container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-      padding: 40px;
-      max-width: 400px;
-      width: 100%;
+    body.dark-mode {
+      background: var(--dark-bg);
+      color: var(--dark-text);
     }
-    .auth-container h2 {
-      text-align: center;
-      color: #2b8a3e;
-      margin-bottom: 20px;
-    }
-    .auth-container input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    .auth-container button {
-      width: 100%;
-      background-color: #2b8a3e;
+    header {
+      background-color: var(--primary);
       color: white;
-      border: none;
-      padding: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    .theme-toggle {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      cursor: pointer;
+      background: white;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .container {
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      transition: background 0.3s;
+    }
+    body.dark-mode .container {
+      background: var(--dark-card);
+    }
+    h2 {
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 4px;
+      font-weight: 500;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 1rem;
-      margin-top: 10px;
-      cursor: pointer;
     }
-    .auth-container button:hover {
+    button {
+      background-color: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
       background-color: #237832;
     }
     .toggle-link {
-      text-align: center;
-      margin-top: 15px;
-      color: #555;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: #333;
+      cursor: pointer;
+      text-decoration: underline;
     }
-    .toggle-link a {
-      color: #2b8a3e;
-      text-decoration: none;
-      font-weight: 500;
+    .hidden {
+      display: none;
+    }
+    .category-title {
+      margin: 30px 0 10px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--primary);
+      border-bottom: 2px dashed #d0e9d0;
+      padding-bottom: 6px;
+    }
+    .question-block {
+      display: none;
+      margin-bottom: 30px;
+    }
+    .question-block.active {
+      display: block;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
     }
   </style>
 </head>
 <body>
-
-  <div class="auth-container" id="loginBox">
-    <h2>Login</h2>
-    <input type="email" placeholder="Email" id="loginEmail" required />
-    <input type="password" placeholder="Password" id="loginPassword" required />
-    <button onclick="login()">Login</button>
-    <div class="toggle-link">
-      Don’t have an account? <a href="#" onclick="toggleForm('signup')">Sign up</a>
+  <header>Business Health Assessment</header>
+  <div class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</div>
+  <div class="container">
+    <div id="login-section">
+      <h2>Login</h2>
+      <label>Email</label>
+      <input type="email" id="loginEmail" required />
+      <label>Password</label>
+      <input type="password" id="loginPassword" required />
+      <button onclick="login()">Login</button>
+      <div class="toggle-link" onclick="showSignup()">Don't have an account? Sign up</div>
     </div>
-  </div>
 
-  <div class="auth-container" id="signupBox" style="display:none">
-    <h2>Sign Up</h2>
-    <input type="text" placeholder="Full Name" id="signupName" required />
-    <input type="email" placeholder="Email" id="signupEmail" required />
-    <input type="password" placeholder="Password" id="signupPassword" required />
-    <button onclick="signup()">Sign Up</button>
-    <div class="toggle-link">
-      Already have an account? <a href="#" onclick="toggleForm('login')">Login</a>
+    <div id="signup-section" class="hidden">
+      <h2>Signup</h2>
+      <label>Name</label>
+      <input type="text" id="signupName" required />
+      <label>Email</label>
+      <input type="email" id="signupEmail" required />
+      <label>Password</label>
+      <input type="password" id="signupPassword" required />
+      <button onclick="signup()">Signup</button>
+      <div class="toggle-link" onclick="showLogin()">Already have an account? Login</div>
     </div>
+
+    <form id="assessment-section" class="hidden">
+      <div id="questions-container"></div>
+      <div class="action-buttons">
+        <button type="button" onclick="saveAssessment()">💾 Save</button>
+        <button type="submit" id="submitBtn" style="display:none">🚀 Submit</button>
+      </div>
+    </form>
   </div>
 
   <script>
-    function toggleForm(type) {
-      document.getElementById("loginBox").style.display = (type === "login") ? "block" : "none";
-      document.getElementById("signupBox").style.display = (type === "signup") ? "block" : "none";
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function showSignup() {
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("signup-section").classList.remove("hidden");
+    }
+
+    function showLogin() {
+      document.getElementById("signup-section").classList.add("hidden");
+      document.getElementById("login-section").classList.remove("hidden");
+    }
+
+    function showAssessment() {
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("signup-section").classList.add("hidden");
+      document.getElementById("assessment-section").classList.remove("hidden");
+      generateQuestions();
     }
 
     function login() {
       const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-      if (email && password) {
-        // ✅ Placeholder: Replace with real backend logic
-        alert("Logged in as " + email);
-        window.location.href = "index.html"; // redirect to the form page
+      const pass = document.getElementById("loginPassword").value;
+      const stored = JSON.parse(localStorage.getItem("bizvitals_user") || "{}");
+      if (stored.email === email && stored.password === pass) {
+        showAssessment();
       } else {
-        alert("Please enter email and password.");
+        alert("Invalid credentials");
       }
     }
 
     function signup() {
       const name = document.getElementById("signupName").value;
       const email = document.getElementById("signupEmail").value;
-      const password = document.getElementById("signupPassword").value;
-      if (name && email && password) {
-        // ✅ Placeholder: Replace with real backend logic
-        alert("Account created for " + name);
-        toggleForm('login');
-      } else {
-        alert("Please fill all fields.");
+      const pass = document.getElementById("signupPassword").value;
+      localStorage.setItem("bizvitals_user", JSON.stringify({ name, email, password: pass }));
+      alert("✅ Signup successful! Please login.");
+      showLogin();
+    }
+
+    function generateQuestions() {
+      const groupedQuestions = {
+        "Revenue & Profitability": [
+          "Are you getting more sales or customers than you did last year?",
+          "Are you less dependent on a single customer or product to keep your business running?",
+          "Have your profit margins improved or stayed stable in the past 12 months?",
+          "Could your business stay profitable if revenue dropped by 10%?",
+          "Do you track revenue trends by product, service, or region?",
+          "Is your pricing strategy aligned with customer value and market position?",
+          "Are you regularly reviewing financial reports to assess profit trends?"
+        ],
+        "Cash Flow & Liquidity": [
+          "Can you handle your regular business expenses without borrowing or delays?",
+          "Do you have some money saved to manage slow months or emergencies?",
+          "Do you know how much money is coming in and going out every month?",
+          "Do you consistently generate more cash than you spend each month?",
+          "Can you access funds quickly in case of a cash crunch?",
+          "Do you forecast your cash flow at least monthly?",
+          "Have you separated personal and business finances completely?",
+          "Do you avoid frequent reliance on credit for regular expenses?"
+        ],
+        "Cost & Expense Management": [
+          "Are most of your costs helping your business grow or run better?",
+          "Could you reduce spending quickly if needed, without hurting your business?",
+          "Do you track your spending against a monthly or quarterly budget?",
+          "Do you routinely review and optimize supplier and vendor contracts?",
+          "Have you identified your top 3 cost drivers in the business?",
+          "Do you run a break-even analysis when planning large expenses?",
+          "Do you review expense reports or accounts monthly?"
+        ],
+        "Working Capital & Efficiency": [
+          "Do your customers usually pay you on time?",
+          "Can you pay your suppliers and bills on time without waiting for new income?",
+          "Could your business keep running for a few months if sales dropped suddenly?",
+          "Are most of your invoices paid within 30 days?",
+          "Do you keep enough inventory to meet demand without overstocking?",
+          "Do you review how quickly you convert inventory into sales?",
+          "Are your payable and receivable cycles optimized to avoid cash gaps?",
+          "Do you monitor short-term assets and liabilities monthly?"
+        ]
+      };
+
+      const scoringMap = { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 };
+      const container = document.getElementById("questions-container");
+      container.innerHTML = "";
+
+      let qIndex = 0;
+      for (const category in groupedQuestions) {
+        const catTitle = document.createElement("div");
+        catTitle.className = "category-title";
+        catTitle.textContent = category;
+        container.appendChild(catTitle);
+
+        groupedQuestions[category].forEach(question => {
+          const div = document.createElement("div");
+          div.className = "question-block";
+          if (qIndex === 0) div.classList.add("active");
+          div.innerHTML = `
+            <h2>(${qIndex + 1}) ${question}</h2>
+            <label><input type="radio" name="q${qIndex}" value="Yes" required> Yes</label>
+            <label><input type="radio" name="q${qIndex}" value="In Process"> In Process</label>
+            <label><input type="radio" name="q${qIndex}" value="No"> No</label>
+            <label><input type="radio" name="q${qIndex}" value="N/A"> N/A</label>
+            <button type="button" onclick="showNext(${qIndex})">Next</button>
+          `;
+          container.appendChild(div);
+          qIndex++;
+        });
       }
     }
-  </script>
 
+    function showNext(current) {
+      const currentBlock = document.querySelectorAll('.question-block')[current];
+      const selected = currentBlock.querySelector('input[type="radio"]:checked');
+      if (!selected) return alert("Please select an option to continue.");
+      currentBlock.classList.remove("active");
+      const nextBlock = document.querySelectorAll('.question-block')[current + 1];
+      if (nextBlock) {
+        nextBlock.classList.add("active");
+      } else {
+        document.getElementById("submitBtn").style.display = "inline-block";
+      }
+    }
+
+    function saveAssessment() {
+      const results = {};
+      const total = {};
+      let allRadios = document.querySelectorAll("input[type=radio]:checked");
+      let qCounter = 0;
+
+      const groupedQuestions = {
+        "Revenue & Profitability": 7,
+        "Cash Flow & Liquidity": 8,
+        "Cost & Expense Management": 7,
+        "Working Capital & Efficiency": 8
+      };
+
+      for (const category in groupedQuestions) {
+        const count = groupedQuestions[category];
+        results[category] = 0;
+        total[category] = count * 10;
+
+        for (let i = 0; i < count; i++) {
+          const value = allRadios[qCounter]?.value || "No";
+          results[category] += { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 }[value];
+          qCounter++;
+        }
+      }
+
+      localStorage.setItem("categoryScores", JSON.stringify(results));
+      localStorage.setItem("categoryTotals", JSON.stringify(total));
+      alert("✅ Your progress has been saved.");
+    }
+
+    document.getElementById("assessment-section").addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveAssessment();
+      alert("✅ Submitted! You can now view your score.");
+    });
+
+    window.onload = () => {
+      const user = JSON.parse(localStorage.getItem("bizvitals_user") || "{}");
+      if (user.email && user.password) {
+        showLogin();
+      }
+    };
+  </script>
 </body>
 </html>
