@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BizVitals 360 - Business Health Assessment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BizVitals 360 - Your Results</title>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -31,42 +32,47 @@
       color: #2b8a3e;
       margin-bottom: 40px;
     }
-    .category-block {
-      margin-bottom: 40px;
+    .report-section {
+      background-color: #e9f7ec;
+      border-left: 6px solid #2b8a3e;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .category-block h2 {
+    .report-section h2 {
+      margin: 0 0 10px;
       color: #2b8a3e;
-      font-size: 1.4rem;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #e0e0e0;
-      padding-bottom: 5px;
     }
-    .question-block {
-      margin-bottom: 20px;
+    .percentage {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #222;
     }
-    .question-block h3 {
-      margin-bottom: 10px;
-      color: #444;
+    .insight {
+      margin-top: 10px;
       font-size: 1rem;
+      color: #555;
     }
-    label {
-      margin-right: 20px;
-      font-size: 0.95rem;
+    .overall-score {
+      background: #d1f2d1;
+      padding: 20px;
+      border: 2px dashed #2b8a3e;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 1.3rem;
+      color: #1e5631;
     }
-    button {
+    .back-button {
+      display: inline-block;
+      padding: 12px 24px;
       background: #2b8a3e;
       color: white;
-      padding: 14px 28px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: block;
-      margin: 40px auto 0;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #256d34;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-top: 30px;
+      font-size: 1rem;
     }
     footer {
       text-align: center;
@@ -77,123 +83,116 @@
   </style>
 </head>
 <body>
-  <header>
-    BizVitals 360 - Business Health Assessment
-  </header>
+  <header>BizVitals 360 - Business Health Report</header>
   <div class="container">
-    <h1>Assess Your Business Performance</h1>
-    <form id="healthForm"></form>
+    <h1>Your Business Health Report</h1>
+    <div id="overall"></div>
+    <div id="report"></div>
+    <a href="index.html" class="back-button">Back to Form</a>
   </div>
   <footer>
     &copy; 2025 BizVitals360. All rights reserved.
   </footer>
 
   <script>
-    const groupedQuestions = {
-      "Revenue & Profitability": [
-        "Are you getting more sales or customers than you did last year?",
-        "Are you less dependent on a single customer or product to keep your business running?",
-        "Have your profit margins improved or stayed stable in the past 12 months?",
-        "Could your business stay profitable if revenue dropped by 10%?",
-        "Do you track revenue trends by product, service, or region?",
-        "Is your pricing strategy aligned with customer value and market position?",
-        "Are you regularly reviewing financial reports to assess profit trends?"
-      ],
-      "Cash Flow & Liquidity": [
-        "Can you handle your regular business expenses without borrowing or delays?",
-        "Do you have some money saved to manage slow months or emergencies?",
-        "Do you know how much money is coming in and going out every month?",
-        "Do you consistently generate more cash than you spend each month?",
-        "Can you access funds quickly in case of a cash crunch?",
-        "Do you forecast your cash flow at least monthly?",
-        "Have you separated personal and business finances completely?",
-        "Do you avoid frequent reliance on credit for regular expenses?"
-      ],
-      "Cost & Expense Management": [
-        "Are most of your costs helping your business grow or run better?",
-        "Could you reduce spending quickly if needed, without hurting your business?",
-        "Do you track your spending against a monthly or quarterly budget?",
-        "Do you routinely review and optimize supplier and vendor contracts?",
-        "Have you identified your top 3 cost drivers in the business?",
-        "Do you run a break-even analysis when planning large expenses?",
-        "Do you review expense reports or accounts monthly?"
-      ],
-      "Working Capital & Efficiency": [
-        "Do your customers usually pay you on time?",
-        "Can you pay your suppliers and bills on time without waiting for new income?",
-        "Could your business keep running for a few months if sales dropped suddenly?",
-        "Are most of your invoices paid within 30 days?",
-        "Do you keep enough inventory to meet demand without overstocking?",
-        "Do you review how quickly you convert inventory into sales?",
-        "Are your payable and receivable cycles optimized to avoid cash gaps?",
-        "Do you monitor short-term assets and liabilities monthly?"
-      ]
+    emailjs.init("XAgK2CQgg4kAl2Az3");
+
+    const categoryScores = JSON.parse(localStorage.getItem("categoryScores"));
+    const categoryTotals = JSON.parse(localStorage.getItem("categoryTotals"));
+
+    const userEmail = "thalajeeva252@gmail.com";
+
+    const insights = {
+      "Revenue & Profitability": {
+        high: "Your business is generating consistent revenue with healthy profit margins.",
+        medium: "Revenue is growing but there’s room to improve diversification and pricing strategy.",
+        low: "Profitability appears to be a challenge. Consider reviewing your pricing and customer base."
+      },
+      "Cash Flow & Liquidity": {
+        high: "You have strong control over cash inflows and outflows.",
+        medium: "Cash flow is manageable, but emergency reserves or forecasting could improve.",
+        low: "Cash crunch risk is high. Prioritize liquidity and better tracking of expenses."
+      },
+      "Cost & Expense Management": {
+        high: "Expenses are well-managed and aligned with growth.",
+        medium: "Some costs may be excessive or unmanaged. Consider budget reviews.",
+        low: "Poor cost controls may be impacting profitability. Optimize major cost drivers."
+      },
+      "Working Capital & Efficiency": {
+        high: "Your capital cycle is healthy and supports operational efficiency.",
+        medium: "There are moderate inefficiencies in payables, receivables or inventory turnover.",
+        low: "Critical inefficiencies exist in your working capital management. Immediate action is needed."
+      }
     };
 
-    const answerOptions = ["Yes", "In Process", "No", "N/A"];
-    const form = document.getElementById("healthForm");
-    let questionIndex = 0;
-
-    for (const category in groupedQuestions) {
-      const catBlock = document.createElement("div");
-      catBlock.className = "category-block";
-      const catTitle = document.createElement("h2");
-      catTitle.textContent = category;
-      catBlock.appendChild(catTitle);
-
-      groupedQuestions[category].forEach(question => {
-        const div = document.createElement("div");
-        div.className = "question-block";
-        div.innerHTML = `
-          <h3>${question}</h3>
-          ${answerOptions.map(opt => `
-            <label><input type="radio" name="q${questionIndex}" value="${opt}" required> ${opt}</label>
-          `).join("")}
-        `;
-        catBlock.appendChild(div);
-        questionIndex++;
-      });
-
-      form.appendChild(catBlock);
+    function getInterpretation(score) {
+      if (score >= 80) return "high";
+      if (score >= 50) return "medium";
+      return "low";
     }
 
-    const submitButton = document.createElement("button");
-    submitButton.type = "submit";
-    submitButton.textContent = "Submit";
-    submitButton.style.marginTop = "30px";
-    form.appendChild(submitButton);
-
-    const answerWeights = { "Yes": 1, "In Process": 0.5, "No": 0, "N/A": 0 };
-
-    form.addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const formData = new FormData(this);
-      const categoryScores = {};
-      const categoryTotals = {};
-
-      let qIndex = 0;
-      for (const category in groupedQuestions) {
-        groupedQuestions[category].forEach(() => {
-          const answer = formData.get(`q${qIndex}`);
-          const weight = 1;
-          const score = answerWeights[answer] * weight;
-
-          if (!categoryScores[category]) {
-            categoryScores[category] = 0;
-            categoryTotals[category] = 0;
-          }
-
-          categoryScores[category] += score;
-          categoryTotals[category] += weight;
-          qIndex++;
-        });
+    function calculateOverallScore(scores, totals) {
+      let totalScore = 0, totalPossible = 0;
+      for (const key in scores) {
+        totalScore += scores[key];
+        totalPossible += totals[key];
       }
+      return totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+    }
 
-      localStorage.setItem("categoryScores", JSON.stringify(categoryScores));
-      localStorage.setItem("categoryTotals", JSON.stringify(categoryTotals));
-      window.location.href = "result.html";
-    });
+    const overallDiv = document.getElementById("overall");
+    const reportDiv = document.getElementById("report");
+    let categoryIndex = 1;
+
+    const overallScore = calculateOverallScore(categoryScores, categoryTotals);
+    overallDiv.innerHTML = `<div class="overall-score">Overall Business Health Score: <strong>${overallScore}%</strong></div>`;
+
+    let emailSummary = `<div style="font-family: system-ui, sans-serif, Arial; font-size: 12px">
+      <div>A message by BizVitals360 has been received. Kindly respond at your earliest convenience.</div>
+      <div style="margin-top: 20px; padding: 15px 0; border-width: 1px 0; border-style: dashed; border-color: lightgrey;">
+        <table role="presentation">
+          <tr>
+            <td style="vertical-align: top">
+              <div style="padding: 6px 10px; margin: 0 10px; background-color: aliceblue; border-radius: 5px; font-size: 26px;" role="img">
+                &#x1F464;
+              </div>
+            </td>
+            <td style="vertical-align: top">
+              <div style="color: #2c3e50; font-size: 16px"><strong>BizVitals360</strong></div>
+              <div style="color: #cccccc; font-size: 13px">${new Date().toLocaleString()}</div>
+              <p style="font-size: 16px">
+                Overall Score: ${overallScore}%<br><br>`;
+
+    for (const category in categoryScores) {
+      const score = categoryScores[category];
+      const total = categoryTotals[category];
+      const percent = total ? Math.round((score / total) * 100) : 0;
+      const level = getInterpretation(percent);
+      const section = document.createElement("div");
+      section.className = "report-section";
+      section.innerHTML = `
+        <h2>(${categoryIndex}) ${category}</h2>
+        <p class="percentage">Score: ${percent}%</p>
+        <div class="insight">${insights[category][level]}</div>
+      `;
+      reportDiv.appendChild(section);
+      emailSummary += `(${categoryIndex}) ${category}: ${percent}% - ${insights[category][level]}<br><br>`;
+      categoryIndex++;
+    }
+
+    emailSummary += `</p></td></tr></table></div></div>`;
+
+    if (userEmail) {
+      emailjs.send("service_4bgk6br", "template_alternatebiz360", {
+        to_email: userEmail,
+        from_name: "BizVitals360",
+        message: emailSummary
+      }).then(() => {
+        console.log("✅ Email sent successfully with formatted HTML template");
+      }).catch((err) => {
+        console.error("❌ Email failed to send:", err);
+      });
+    }
   </script>
 </body>
 </html>
