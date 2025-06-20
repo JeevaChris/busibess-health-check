@@ -1,3 +1,4 @@
+<!-- Save this as index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -217,30 +218,12 @@
           "Do you forecast your cash flow at least monthly?",
           "Have you separated personal and business finances completely?",
           "Do you avoid frequent reliance on credit for regular expenses?"
-        ],
-        "Cost & Expense Management": [
-          "Are most of your costs helping your business grow or run better?",
-          "Could you reduce spending quickly if needed, without hurting your business?",
-          "Do you track your spending against a monthly or quarterly budget?",
-          "Do you routinely review and optimize supplier and vendor contracts?",
-          "Have you identified your top 3 cost drivers in the business?",
-          "Do you run a break-even analysis when planning large expenses?",
-          "Do you review expense reports or accounts monthly?"
-        ],
-        "Working Capital & Efficiency": [
-          "Do your customers usually pay you on time?",
-          "Can you pay your suppliers and bills on time without waiting for new income?",
-          "Could your business keep running for a few months if sales dropped suddenly?",
-          "Are most of your invoices paid within 30 days?",
-          "Do you keep enough inventory to meet demand without overstocking?",
-          "Do you review how quickly you convert inventory into sales?",
-          "Are your payable and receivable cycles optimized to avoid cash gaps?",
-          "Do you monitor short-term assets and liabilities monthly?"
         ]
       };
 
       const container = document.getElementById("questions-container");
       container.innerHTML = "";
+
       let qIndex = 0;
       for (const category in groupedQuestions) {
         const catTitle = document.createElement("div");
@@ -287,9 +270,7 @@
 
       const groupedQuestions = {
         "Revenue & Profitability": 7,
-        "Cash Flow & Liquidity": 8,
-        "Cost & Expense Management": 7,
-        "Working Capital & Efficiency": 8
+        "Cash Flow & Liquidity": 8
       };
 
       for (const category in groupedQuestions) {
