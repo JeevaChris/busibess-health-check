@@ -1,199 +1,155 @@
+<!-- result.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BizVitals 360 - Your Results</title>
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #f0f4f8, #d9e4f5);
+      background: #f0f4f8;
       margin: 0;
       padding: 0;
     }
     header {
       background-color: #2b8a3e;
       color: white;
-      padding: 20px 40px;
+      padding: 30px 20px;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 2rem;
+      font-weight: bold;
     }
     .container {
-      max-width: 1000px;
+      max-width: 960px;
       margin: 40px auto;
-      background: #fff;
-      padding: 40px;
+      padding: 30px;
+      background: white;
       border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
     }
-    h1 {
+    .overall-banner {
+      background: #d1f2d1;
+      padding: 30px;
+      border-radius: 12px;
       text-align: center;
-      color: #2b8a3e;
-      margin-bottom: 40px;
-    }
-    .report-section {
-      background-color: #e9f7ec;
-      border-left: 6px solid #2b8a3e;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    .report-section h2 {
-      margin: 0 0 10px;
-      color: #2b8a3e;
-    }
-    .percentage {
-      font-size: 1.5em;
+      font-size: 1.5rem;
+      color: #1e5631;
       font-weight: bold;
-      color: #222;
+      margin-bottom: 30px;
+    }
+    .category-card {
+      background: #f4fff4;
+      border-left: 6px solid #2b8a3e;
+      border-radius: 8px;
+      padding: 20px 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .category-card h2 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+      color: #2b8a3e;
+    }
+    .score-bar {
+      height: 14px;
+      background: #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 10px 0 15px;
+    }
+    .score-bar-fill {
+      height: 100%;
+      background: #2b8a3e;
     }
     .insight {
-      margin-top: 10px;
+      color: #333;
       font-size: 1rem;
-      color: #555;
-    }
-    .overall-score {
-      background: #d1f2d1;
-      padding: 20px;
-      border: 2px dashed #2b8a3e;
-      border-radius: 10px;
-      margin-bottom: 30px;
-      text-align: center;
-      font-size: 1.3rem;
-      color: #1e5631;
     }
     .back-button {
       display: inline-block;
+      margin-top: 30px;
       padding: 12px 24px;
       background: #2b8a3e;
       color: white;
       text-decoration: none;
       border-radius: 6px;
-      margin-top: 30px;
-      font-size: 1rem;
-    }
-    footer {
-      text-align: center;
-      font-size: 0.9rem;
-      padding: 20px;
-      color: #999;
     }
   </style>
 </head>
 <body>
-  <header>BizVitals 360 - Business Health Report</header>
+  <header>Business Health Report</header>
   <div class="container">
-    <h1>Your Business Health Report</h1>
-    <div id="overall"></div>
+    <div id="overall" class="overall-banner"></div>
     <div id="report"></div>
     <a href="index.html" class="back-button">Back to Form</a>
   </div>
-  <footer>
-    &copy; 2025 BizVitals360. All rights reserved.
-  </footer>
 
   <script>
-    window.onload = function () {
-      emailjs.init("XAgK2CQgg4kAl2Az3"); // Your public key
+    const categoryScores = JSON.parse(localStorage.getItem("categoryScores"));
+    const categoryTotals = JSON.parse(localStorage.getItem("categoryTotals"));
 
-      const categoryScores = JSON.parse(localStorage.getItem("categoryScores") || "{}");
-      const categoryTotals = JSON.parse(localStorage.getItem("categoryTotals") || "{}");
-
-      const userEmail = "thalajeeva252@gmail.com";
-
-      const insights = {
-        "Revenue & Profitability": {
-          high: "Your business is generating consistent revenue with healthy profit margins.",
-          medium: "Revenue is growing but there’s room to improve diversification and pricing strategy.",
-          low: "Profitability appears to be a challenge. Consider reviewing your pricing and customer base."
-        },
-        "Cash Flow & Liquidity": {
-          high: "You have strong control over cash inflows and outflows.",
-          medium: "Cash flow is manageable, but emergency reserves or forecasting could improve.",
-          low: "Cash crunch risk is high. Prioritize liquidity and better tracking of expenses."
-        },
-        "Cost & Expense Management": {
-          high: "Expenses are well-managed and aligned with growth.",
-          medium: "Some costs may be excessive or unmanaged. Consider budget reviews.",
-          low: "Poor cost controls may be impacting profitability. Optimize major cost drivers."
-        },
-        "Working Capital & Efficiency": {
-          high: "Your capital cycle is healthy and supports operational efficiency.",
-          medium: "There are moderate inefficiencies in payables, receivables or inventory turnover.",
-          low: "Critical inefficiencies exist in your working capital management. Immediate action is needed."
-        }
-      };
-
-      function getInterpretation(score) {
-        if (score >= 80) return "high";
-        if (score >= 50) return "medium";
-        return "low";
-      }
-
-      function calculateOverallScore(scores, totals) {
-        let totalScore = 0, totalPossible = 0;
-        for (const key in scores) {
-          totalScore += scores[key];
-          totalPossible += totals[key];
-        }
-        return totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
-      }
-
-      const overallDiv = document.getElementById("overall");
-      const reportDiv = document.getElementById("report");
-      let categoryIndex = 1;
-
-      const overallScore = calculateOverallScore(categoryScores, categoryTotals);
-      overallDiv.innerHTML = `<div class="overall-score">Overall Business Health Score: <strong>${overallScore}%</strong></div>`;
-
-      let emailSummary = `<div style="font-family: system-ui, sans-serif, Arial; font-size: 12px">
-        <div>A message by BizVitals360 has been received. Kindly respond at your earliest convenience.</div>
-        <div style="margin-top: 20px; padding: 15px 0; border-width: 1px 0; border-style: dashed; border-color: lightgrey;">
-          <table role="presentation"><tr>
-            <td style="vertical-align: top">
-              <div style="padding: 6px 10px; margin: 0 10px; background-color: aliceblue; border-radius: 5px; font-size: 26px;" role="img">
-                &#x1F464;
-              </div>
-            </td>
-            <td style="vertical-align: top">
-              <div style="color: #2c3e50; font-size: 16px"><strong>BizVitals360</strong></div>
-              <div style="color: #cccccc; font-size: 13px">${new Date().toLocaleString()}</div>
-              <p style="font-size: 16px">
-                Overall Score: ${overallScore}%<br><br>`;
-
-      for (const category in categoryScores) {
-        const score = categoryScores[category];
-        const total = categoryTotals[category];
-        const percent = total ? Math.round((score / total) * 100) : 0;
-        const level = getInterpretation(percent);
-        const section = document.createElement("div");
-        section.className = "report-section";
-        section.innerHTML = `
-          <h2>(${categoryIndex}) ${category}</h2>
-          <p class="percentage">Score: ${percent}%</p>
-          <div class="insight">${insights[category][level]}</div>`;
-        reportDiv.appendChild(section);
-
-        emailSummary += `(${categoryIndex}) ${category}: ${percent}% - ${insights[category][level]}<br><br>`;
-        categoryIndex++;
-      }
-
-      emailSummary += `</p></td></tr></table></div></div>`;
-
-      if (userEmail) {
-        emailjs.send("service_4bgk6br", "template_alternatebiz360", {
-          to_email: userEmail,
-          from_name: "BizVitals360",
-          message: emailSummary
-        }).then(() => {
-          console.log("✅ Email sent successfully to:", userEmail);
-        }).catch((err) => {
-          console.error("❌ Email failed to send:", err);
-        });
+    const insights = {
+      "Revenue & Profitability": {
+        high: "Strong revenue base and profitability.",
+        medium: "Improving, but could use diversification.",
+        low: "Consider rethinking your revenue strategy."
+      },
+      "Cash Flow & Liquidity": {
+        high: "Good liquidity and cash flow.",
+        medium: "Moderate control, forecasting can help.",
+        low: "High risk of cash crunch."
+      },
+      "Cost & Expense Management": {
+        high: "Well-controlled and optimized costs.",
+        medium: "Some waste may exist, review budgets.",
+        low: "Urgent need to cut down inefficient spending."
+      },
+      "Working Capital & Efficiency": {
+        high: "Healthy working capital cycle.",
+        medium: "Minor inefficiencies detected.",
+        low: "Significant delays or blockages in capital flow."
       }
     };
+
+    function getInterpretation(score) {
+      if (score >= 80) return "high";
+      if (score >= 50) return "medium";
+      return "low";
+    }
+
+    function calculateOverallScore(scores, totals) {
+      let totalScore = 0, totalPossible = 0;
+      for (const key in scores) {
+        totalScore += scores[key];
+        totalPossible += totals[key];
+      }
+      return totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+    }
+
+    const overallScore = calculateOverallScore(categoryScores, categoryTotals);
+    document.getElementById("overall").textContent = `Overall Business Health Score: ${overallScore}%`;
+
+    const reportDiv = document.getElementById("report");
+
+    let categoryIndex = 1;
+    for (const category in categoryScores) {
+      const score = categoryScores[category];
+      const total = categoryTotals[category];
+      const percent = total ? Math.round((score / total) * 100) : 0;
+      const level = getInterpretation(percent);
+
+      const card = document.createElement("div");
+      card.className = "category-card";
+      card.innerHTML = `
+        <h2>(${categoryIndex}) ${category}</h2>
+        <div class="score-bar"><div class="score-bar-fill" style="width: ${percent}%"></div></div>
+        <div class="insight">${insights[category][level]}</div>
+      `;
+      reportDiv.appendChild(card);
+
+      categoryIndex++;
+    }
   </script>
 </body>
 </html>
