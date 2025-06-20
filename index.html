@@ -1,92 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BizVitals 360 - Business Health Assessment</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #f0f4f8, #d9e4f5);
+      background: #f0f4f8;
       margin: 0;
       padding: 0;
     }
     header {
       background-color: #2b8a3e;
       color: white;
-      padding: 20px 40px;
+      padding: 30px 20px;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 2rem;
+      font-weight: bold;
     }
     .container {
-      max-width: 1000px;
+      max-width: 700px;
       margin: 40px auto;
-      background: #fff;
-      padding: 40px;
+      padding: 30px;
+      background: white;
       border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
     }
-    h1 {
-      text-align: center;
+    .category-title {
+      margin: 30px 0 10px;
+      font-size: 1.3rem;
+      font-weight: bold;
       color: #2b8a3e;
-      margin-bottom: 40px;
-    }
-    .category-block {
-      margin-bottom: 40px;
-    }
-    .category-block h2 {
-      color: #2b8a3e;
-      font-size: 1.4rem;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #e0e0e0;
-      padding-bottom: 5px;
+      border-bottom: 2px dashed #d0e9d0;
+      padding-bottom: 6px;
     }
     .question-block {
-      margin-bottom: 20px;
+      display: none;
+      margin-bottom: 30px;
     }
-    .question-block h3 {
+    .question-block.active {
+      display: block;
+    }
+    h2 {
+      font-size: 1.1rem;
+      color: #2b8a3e;
       margin-bottom: 10px;
-      color: #444;
-      font-size: 1rem;
     }
     label {
-      margin-right: 20px;
-      font-size: 0.95rem;
+      display: block;
+      margin: 8px 0;
+      font-size: 1rem;
     }
     button {
-      background: #2b8a3e;
+      background-color: #2b8a3e;
       color: white;
-      padding: 14px 28px;
+      padding: 12px 24px;
       border: none;
       border-radius: 8px;
-      font-size: 1.1rem;
+      font-size: 1rem;
       cursor: pointer;
-      display: block;
-      margin: 40px auto 0;
-      transition: background 0.3s ease;
+      margin: 12px 6px 0;
     }
     button:hover {
-      background: #256d34;
+      background-color: #256d34;
     }
-    footer {
+    .button-group {
       text-align: center;
-      font-size: 0.9rem;
-      padding: 20px;
-      color: #999;
     }
   </style>
 </head>
 <body>
-  <header>
-    BizVitals 360 - Business Health Assessment
-  </header>
+  <header>Business Health Assessment</header>
   <div class="container">
-    <h1>Assess Your Business Performance</h1>
-    <form id="healthForm"></form>
+    <form id="healthForm">
+      <div id="questions-container"></div>
+      <div class="button-group">
+        <button type="button" id="saveBtn">💾 Save Progress</button>
+        <button type="submit" style="display:none" id="submitBtn">🚀 Submit & View Score</button>
+      </div>
+    </form>
   </div>
-  <footer>
-    &copy; 2025 BizVitals360. All rights reserved.
-  </footer>
 
   <script>
     const groupedQuestions = {
@@ -130,68 +124,85 @@
       ]
     };
 
-    const answerOptions = ["Yes", "In Process", "No", "N/A"];
-    const form = document.getElementById("healthForm");
-    let questionIndex = 0;
+    const scoringMap = {
+      "Yes": 10,
+      "In Process": 5,
+      "No": 0,
+      "N/A": 0
+    };
+
+    const container = document.getElementById("questions-container");
+    let qIndex = 0;
 
     for (const category in groupedQuestions) {
-      const catBlock = document.createElement("div");
-      catBlock.className = "category-block";
-      const catTitle = document.createElement("h2");
+      const catTitle = document.createElement("div");
+      catTitle.className = "category-title";
       catTitle.textContent = category;
-      catBlock.appendChild(catTitle);
+      container.appendChild(catTitle);
 
       groupedQuestions[category].forEach(question => {
         const div = document.createElement("div");
         div.className = "question-block";
+        if (qIndex === 0) div.classList.add("active");
         div.innerHTML = `
-          <h3>${question}</h3>
-          ${answerOptions.map(opt => `
-            <label><input type="radio" name="q${questionIndex}" value="${opt}" required> ${opt}</label>
-          `).join("")}
+          <h2>(${qIndex + 1}) ${question}</h2>
+          <label><input type="radio" name="q${qIndex}" value="Yes" required> ✅ Yes</label>
+          <label><input type="radio" name="q${qIndex}" value="In Process"> 🔄 In Process</label>
+          <label><input type="radio" name="q${qIndex}" value="No"> ❌ No</label>
+          <label><input type="radio" name="q${qIndex}" value="N/A"> 🔘 N/A</label>
+          <button type="button" onclick="showNext(${qIndex})">Next</button>
         `;
-        catBlock.appendChild(div);
-        questionIndex++;
+        container.appendChild(div);
+        qIndex++;
       });
-
-      form.appendChild(catBlock);
     }
 
-    const submitButton = document.createElement("button");
-    submitButton.type = "submit";
-    submitButton.textContent = "Submit";
-    submitButton.style.marginTop = "30px";
-    form.appendChild(submitButton);
+    function showNext(current) {
+      const currentBlock = document.querySelectorAll('.question-block')[current];
+      const selected = currentBlock.querySelector('input[type="radio"]:checked');
+      if (!selected) return alert("Please select an option to continue.");
+      currentBlock.classList.remove("active");
+      const nextBlock = document.querySelectorAll('.question-block')[current + 1];
+      if (nextBlock) {
+        nextBlock.classList.add("active");
+      } else {
+        document.getElementById("submitBtn").style.display = "inline-block";
+      }
+    }
 
-    const answerWeights = { "Yes": 1, "In Process": 0.5, "No": 0, "N/A": 0 };
+    document.getElementById("saveBtn").addEventListener("click", () => {
+      const answers = {};
+      const radios = document.querySelectorAll("input[type=radio]:checked");
+      radios.forEach(radio => {
+        answers[radio.name] = radio.value;
+      });
+      localStorage.setItem("savedAnswers", JSON.stringify(answers));
+      alert("✅ Progress saved locally. You can resume later.");
+    });
 
-    form.addEventListener("submit", function(e) {
+    document.getElementById("healthForm").addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const formData = new FormData(this);
       const categoryScores = {};
       const categoryTotals = {};
+      let allRadios = document.querySelectorAll("input[type=radio]:checked");
+      let qCounter = 0;
 
-      let qIndex = 0;
       for (const category in groupedQuestions) {
-        groupedQuestions[category].forEach(() => {
-          const answer = formData.get(`q${qIndex}`);
-          const weight = 1;
-          const score = answerWeights[answer] * weight;
+        const questions = groupedQuestions[category];
+        categoryScores[category] = 0;
+        categoryTotals[category] = questions.length * 10;
 
-          if (!categoryScores[category]) {
-            categoryScores[category] = 0;
-            categoryTotals[category] = 0;
-          }
-
-          categoryScores[category] += score;
-          categoryTotals[category] += weight;
-          qIndex++;
-        });
+        for (let i = 0; i < questions.length; i++) {
+          const value = allRadios[qCounter].value;
+          categoryScores[category] += scoringMap[value];
+          qCounter++;
+        }
       }
 
       localStorage.setItem("categoryScores", JSON.stringify(categoryScores));
       localStorage.setItem("categoryTotals", JSON.stringify(categoryTotals));
+
       window.location.href = "result.html";
     });
   </script>
