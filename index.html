@@ -1,37 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BizVitals 360 - Business Health Assessment</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BizVitals 360 - Login & Assessment</title>
   <style>
+    :root {
+      --primary: #2b8a3e;
+      --light-bg: #f5f9f6;
+      --border: #d2e6d2;
+      --text-dark: #1a1a1a;
+      --dark-bg: #1e1e1e;
+      --dark-card: #2b2b2b;
+      --dark-text: #f5f5f5;
+    }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f4f8;
+      background: var(--light-bg);
       margin: 0;
       padding: 0;
+      color: var(--text-dark);
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background: var(--dark-bg);
+      color: var(--dark-text);
     }
     header {
-      background-color: #2b8a3e;
+      background-color: var(--primary);
       color: white;
       padding: 30px 20px;
       text-align: center;
       font-size: 2rem;
       font-weight: bold;
     }
+    .theme-toggle {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      cursor: pointer;
+      background: white;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
     .container {
       max-width: 700px;
-      margin: 40px auto;
+      margin: 30px auto;
       padding: 30px;
       background: white;
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      transition: background 0.3s;
+    }
+    body.dark-mode .container {
+      background: var(--dark-card);
+    }
+    h2 {
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 4px;
+      font-weight: 500;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #237832;
+    }
+    .toggle-link {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: #333;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .hidden {
+      display: none;
     }
     .category-title {
       margin: 30px 0 10px;
       font-size: 1.3rem;
       font-weight: bold;
-      color: #2b8a3e;
+      color: var(--primary);
       border-bottom: 2px dashed #d0e9d0;
       padding-bottom: 6px;
     }
@@ -42,119 +113,157 @@
     .question-block.active {
       display: block;
     }
-    h2 {
-      font-size: 1.1rem;
-      color: #2b8a3e;
-      margin-bottom: 10px;
-    }
-    label {
-      display: block;
-      margin: 8px 0;
-      font-size: 1rem;
-    }
-    button {
-      background-color: #2b8a3e;
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin: 12px 6px 0;
-    }
-    button:hover {
-      background-color: #256d34;
-    }
-    .button-group {
-      text-align: center;
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
     }
   </style>
 </head>
 <body>
   <header>Business Health Assessment</header>
+  <div class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</div>
   <div class="container">
-    <form id="healthForm">
+    <div id="login-section">
+      <h2>Login</h2>
+      <label>Email</label>
+      <input type="email" id="loginEmail" required />
+      <label>Password</label>
+      <input type="password" id="loginPassword" required />
+      <button onclick="login()">Login</button>
+      <div class="toggle-link" onclick="showSignup()">Don't have an account? Sign up</div>
+    </div>
+
+    <div id="signup-section" class="hidden">
+      <h2>Signup</h2>
+      <label>Name</label>
+      <input type="text" id="signupName" required />
+      <label>Email</label>
+      <input type="email" id="signupEmail" required />
+      <label>Password</label>
+      <input type="password" id="signupPassword" required />
+      <button onclick="signup()">Signup</button>
+      <div class="toggle-link" onclick="showLogin()">Already have an account? Login</div>
+    </div>
+
+    <form id="assessment-section" class="hidden">
       <div id="questions-container"></div>
-      <div class="button-group">
-        <button type="button" id="saveBtn">💾 Save Progress</button>
-        <button type="submit" style="display:none" id="submitBtn">🚀 Submit & View Score</button>
+      <div class="action-buttons">
+        <button type="button" onclick="saveAssessment()">💾 Save</button>
+        <button type="submit" id="submitBtn" style="display:none">🚀 Submit</button>
       </div>
     </form>
   </div>
 
   <script>
-    const groupedQuestions = {
-      "Revenue & Profitability": [
-        "Are you getting more sales or customers than you did last year?",
-        "Are you less dependent on a single customer or product to keep your business running?",
-        "Have your profit margins improved or stayed stable in the past 12 months?",
-        "Could your business stay profitable if revenue dropped by 10%?",
-        "Do you track revenue trends by product, service, or region?",
-        "Is your pricing strategy aligned with customer value and market position?",
-        "Are you regularly reviewing financial reports to assess profit trends?"
-      ],
-      "Cash Flow & Liquidity": [
-        "Can you handle your regular business expenses without borrowing or delays?",
-        "Do you have some money saved to manage slow months or emergencies?",
-        "Do you know how much money is coming in and going out every month?",
-        "Do you consistently generate more cash than you spend each month?",
-        "Can you access funds quickly in case of a cash crunch?",
-        "Do you forecast your cash flow at least monthly?",
-        "Have you separated personal and business finances completely?",
-        "Do you avoid frequent reliance on credit for regular expenses?"
-      ],
-      "Cost & Expense Management": [
-        "Are most of your costs helping your business grow or run better?",
-        "Could you reduce spending quickly if needed, without hurting your business?",
-        "Do you track your spending against a monthly or quarterly budget?",
-        "Do you routinely review and optimize supplier and vendor contracts?",
-        "Have you identified your top 3 cost drivers in the business?",
-        "Do you run a break-even analysis when planning large expenses?",
-        "Do you review expense reports or accounts monthly?"
-      ],
-      "Working Capital & Efficiency": [
-        "Do your customers usually pay you on time?",
-        "Can you pay your suppliers and bills on time without waiting for new income?",
-        "Could your business keep running for a few months if sales dropped suddenly?",
-        "Are most of your invoices paid within 30 days?",
-        "Do you keep enough inventory to meet demand without overstocking?",
-        "Do you review how quickly you convert inventory into sales?",
-        "Are your payable and receivable cycles optimized to avoid cash gaps?",
-        "Do you monitor short-term assets and liabilities monthly?"
-      ]
-    };
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
 
-    const scoringMap = {
-      "Yes": 10,
-      "In Process": 5,
-      "No": 0,
-      "N/A": 0
-    };
+    function showSignup() {
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("signup-section").classList.remove("hidden");
+    }
 
-    const container = document.getElementById("questions-container");
-    let qIndex = 0;
+    function showLogin() {
+      document.getElementById("signup-section").classList.add("hidden");
+      document.getElementById("login-section").classList.remove("hidden");
+    }
 
-    for (const category in groupedQuestions) {
-      const catTitle = document.createElement("div");
-      catTitle.className = "category-title";
-      catTitle.textContent = category;
-      container.appendChild(catTitle);
+    function showAssessment() {
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("signup-section").classList.add("hidden");
+      document.getElementById("assessment-section").classList.remove("hidden");
+      generateQuestions();
+    }
 
-      groupedQuestions[category].forEach(question => {
-        const div = document.createElement("div");
-        div.className = "question-block";
-        if (qIndex === 0) div.classList.add("active");
-        div.innerHTML = `
-          <h2>(${qIndex + 1}) ${question}</h2>
-          <label><input type="radio" name="q${qIndex}" value="Yes" required> ✅ Yes</label>
-          <label><input type="radio" name="q${qIndex}" value="In Process"> 🔄 In Process</label>
-          <label><input type="radio" name="q${qIndex}" value="No"> ❌ No</label>
-          <label><input type="radio" name="q${qIndex}" value="N/A"> 🔘 N/A</label>
-          <button type="button" onclick="showNext(${qIndex})">Next</button>
-        `;
-        container.appendChild(div);
-        qIndex++;
-      });
+    function login() {
+      const email = document.getElementById("loginEmail").value;
+      const pass = document.getElementById("loginPassword").value;
+      const stored = JSON.parse(localStorage.getItem("bizvitals_user") || "{}");
+      if (stored.email === email && stored.password === pass) {
+        showAssessment();
+      } else {
+        alert("Invalid credentials");
+      }
+    }
+
+    function signup() {
+      const name = document.getElementById("signupName").value;
+      const email = document.getElementById("signupEmail").value;
+      const pass = document.getElementById("signupPassword").value;
+      localStorage.setItem("bizvitals_user", JSON.stringify({ name, email, password: pass }));
+      alert("✅ Signup successful! Please login.");
+      showLogin();
+    }
+
+    function generateQuestions() {
+      const groupedQuestions = {
+        "Revenue & Profitability": [
+          "Are you getting more sales or customers than you did last year?",
+          "Are you less dependent on a single customer or product to keep your business running?",
+          "Have your profit margins improved or stayed stable in the past 12 months?",
+          "Could your business stay profitable if revenue dropped by 10%?",
+          "Do you track revenue trends by product, service, or region?",
+          "Is your pricing strategy aligned with customer value and market position?",
+          "Are you regularly reviewing financial reports to assess profit trends?"
+        ],
+        "Cash Flow & Liquidity": [
+          "Can you handle your regular business expenses without borrowing or delays?",
+          "Do you have some money saved to manage slow months or emergencies?",
+          "Do you know how much money is coming in and going out every month?",
+          "Do you consistently generate more cash than you spend each month?",
+          "Can you access funds quickly in case of a cash crunch?",
+          "Do you forecast your cash flow at least monthly?",
+          "Have you separated personal and business finances completely?",
+          "Do you avoid frequent reliance on credit for regular expenses?"
+        ],
+        "Cost & Expense Management": [
+          "Are most of your costs helping your business grow or run better?",
+          "Could you reduce spending quickly if needed, without hurting your business?",
+          "Do you track your spending against a monthly or quarterly budget?",
+          "Do you routinely review and optimize supplier and vendor contracts?",
+          "Have you identified your top 3 cost drivers in the business?",
+          "Do you run a break-even analysis when planning large expenses?",
+          "Do you review expense reports or accounts monthly?"
+        ],
+        "Working Capital & Efficiency": [
+          "Do your customers usually pay you on time?",
+          "Can you pay your suppliers and bills on time without waiting for new income?",
+          "Could your business keep running for a few months if sales dropped suddenly?",
+          "Are most of your invoices paid within 30 days?",
+          "Do you keep enough inventory to meet demand without overstocking?",
+          "Do you review how quickly you convert inventory into sales?",
+          "Are your payable and receivable cycles optimized to avoid cash gaps?",
+          "Do you monitor short-term assets and liabilities monthly?"
+        ]
+      };
+
+      const container = document.getElementById("questions-container");
+      container.innerHTML = "";
+      let qIndex = 0;
+      for (const category in groupedQuestions) {
+        const catTitle = document.createElement("div");
+        catTitle.className = "category-title";
+        catTitle.textContent = category;
+        container.appendChild(catTitle);
+
+        groupedQuestions[category].forEach(question => {
+          const div = document.createElement("div");
+          div.className = "question-block";
+          if (qIndex === 0) div.classList.add("active");
+          div.innerHTML = `
+            <h2>(${qIndex + 1}) ${question}</h2>
+            <label><input type="radio" name="q${qIndex}" value="Yes" required> Yes</label>
+            <label><input type="radio" name="q${qIndex}" value="In Process"> In Process</label>
+            <label><input type="radio" name="q${qIndex}" value="No"> No</label>
+            <label><input type="radio" name="q${qIndex}" value="N/A"> N/A</label>
+            <button type="button" onclick="showNext(${qIndex})">Next</button>
+          `;
+          container.appendChild(div);
+          qIndex++;
+        });
+      }
     }
 
     function showNext(current) {
@@ -170,41 +279,48 @@
       }
     }
 
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      const answers = {};
-      const radios = document.querySelectorAll("input[type=radio]:checked");
-      radios.forEach(radio => {
-        answers[radio.name] = radio.value;
-      });
-      localStorage.setItem("savedAnswers", JSON.stringify(answers));
-      alert("✅ Progress saved locally. You can resume later.");
-    });
-
-    document.getElementById("healthForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      const categoryScores = {};
-      const categoryTotals = {};
+    function saveAssessment() {
+      const results = {};
+      const total = {};
       let allRadios = document.querySelectorAll("input[type=radio]:checked");
       let qCounter = 0;
 
-      for (const category in groupedQuestions) {
-        const questions = groupedQuestions[category];
-        categoryScores[category] = 0;
-        categoryTotals[category] = questions.length * 10;
+      const groupedQuestions = {
+        "Revenue & Profitability": 7,
+        "Cash Flow & Liquidity": 8,
+        "Cost & Expense Management": 7,
+        "Working Capital & Efficiency": 8
+      };
 
-        for (let i = 0; i < questions.length; i++) {
-          const value = allRadios[qCounter].value;
-          categoryScores[category] += scoringMap[value];
+      for (const category in groupedQuestions) {
+        const count = groupedQuestions[category];
+        results[category] = 0;
+        total[category] = count * 10;
+
+        for (let i = 0; i < count; i++) {
+          const value = allRadios[qCounter]?.value || "No";
+          results[category] += { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 }[value];
           qCounter++;
         }
       }
 
-      localStorage.setItem("categoryScores", JSON.stringify(categoryScores));
-      localStorage.setItem("categoryTotals", JSON.stringify(categoryTotals));
+      localStorage.setItem("categoryScores", JSON.stringify(results));
+      localStorage.setItem("categoryTotals", JSON.stringify(total));
+      alert("✅ Your progress has been saved.");
+    }
 
-      window.location.href = "result.html";
+    document.getElementById("assessment-section").addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveAssessment();
+      alert("✅ Submitted! You can now view your score.");
     });
+
+    window.onload = () => {
+      const user = JSON.parse(localStorage.getItem("bizvitals_user") || "{}");
+      if (user.email && user.password) {
+        showLogin();
+      }
+    };
   </script>
 </body>
 </html>
