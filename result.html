@@ -2,67 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BizVitals 360 - Assessment Results</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BizVitals 360 - One-by-One Question Flow</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f9f6;
+      background: #f0f5f2;
       margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #2b8a3e;
-      color: white;
-      padding: 15px;
-      font-size: 1.5rem;
-      text-align: center;
+      padding: 20px;
     }
     .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
+      max-width: 700px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h2 {
       text-align: center;
       color: #2b8a3e;
     }
-    .score-row {
-      margin: 20px 0;
+    .question-block {
+      display: none;
     }
-    .category {
-      font-weight: bold;
-      margin-bottom: 5px;
+    .question-block.active {
+      display: block;
     }
-    .bar {
-      background: #e0f1e7;
-      border-radius: 6px;
-      overflow: hidden;
-      height: 20px;
-    }
-    .fill {
-      background: #2b8a3e;
-      height: 100%;
-      transition: width 0.5s ease;
-    }
-    .percentage {
-      text-align: right;
-      margin-top: 5px;
-      font-size: 0.9rem;
-      color: #555;
+    .options label {
+      display: block;
+      margin-bottom: 8px;
     }
     .btn {
-      display: block;
-      margin: 30px auto 0;
+      margin-top: 20px;
       padding: 10px 20px;
       background: #2b8a3e;
       color: white;
       border: none;
       border-radius: 5px;
-      font-size: 1rem;
       cursor: pointer;
     }
     .btn:hover {
@@ -71,45 +48,114 @@
   </style>
 </head>
 <body>
-  <header>Assessment Report</header>
   <div class="container">
-    <h2>Your Business Health Summary</h2>
-    <div id="score-details"></div>
-    <button class="btn" onclick="goBack()">🔙 Back to Dashboard</button>
+    <h2>Business Health Assessment</h2>
+    <form id="stepForm">
+      <div id="questionContainer"></div>
+      <button type="submit" class="btn" style="display:none">Submit</button>
+    </form>
   </div>
 
   <script>
-    function renderScores() {
-      const scores = JSON.parse(localStorage.getItem("categoryScores") || "{}");
-      const totals = JSON.parse(localStorage.getItem("categoryTotals") || "{}");
-      const container = document.getElementById("score-details");
+    const questions = [
+      { category: "Revenue & Profitability", text: "Are you getting more sales or customers than last year?", weight: 5 },
+      { category: "Revenue & Profitability", text: "Are you less dependent on a single customer or product?", weight: 4 },
+      { category: "Revenue & Profitability", text: "Have your profit margins improved or stayed stable in the past 12 months?", weight: 4 },
+      { category: "Revenue & Profitability", text: "Could your business stay profitable if revenue dropped by 10%?", weight: 3 },
+      { category: "Revenue & Profitability", text: "Do you track revenue trends by product, service, or region?", weight: 3 },
+      { category: "Revenue & Profitability", text: "Is your pricing strategy aligned with customer value and market position?", weight: 3 },
+      { category: "Revenue & Profitability", text: "Are you regularly reviewing financial reports to assess profit trends?", weight: 3 },
+      { category: "Cash Flow & Liquidity", text: "Can you handle your regular business expenses without borrowing or delays?", weight: 4 },
+      { category: "Cash Flow & Liquidity", text: "Do you have some money saved to manage slow months or emergencies?", weight: 3 },
+      { category: "Cash Flow & Liquidity", text: "Do you know how much money is coming in and going out every month?", weight: 3 },
+      { category: "Cash Flow & Liquidity", text: "Do you consistently generate more cash than you spend each month?", weight: 4 },
+      { category: "Cash Flow & Liquidity", text: "Can you access funds quickly in case of a cash crunch?", weight: 3 },
+      { category: "Cash Flow & Liquidity", text: "Do you forecast your cash flow at least monthly?", weight: 3 },
+      { category: "Cash Flow & Liquidity", text: "Have you separated personal and business finances completely?", weight: 2 },
+      { category: "Cash Flow & Liquidity", text: "Do you avoid frequent reliance on credit for regular expenses?", weight: 3 },
+      // Add remaining categories below...
+    ];
 
-      if (Object.keys(scores).length === 0) {
-        container.innerHTML = '<p>No score data found. Please complete the assessment first.</p>';
-        return;
-      }
+    const options = ["Yes", "No", "In Process", "Not Applicable"];
+    const scores = { "Yes": 1, "In Process": 0.5, "No": 0, "Not Applicable": 0 };
 
-      for (const category in scores) {
-        const percent = ((scores[category] / totals[category]) * 100).toFixed(1);
+    const container = document.getElementById("questionContainer");
+    const form = document.getElementById("stepForm");
 
-        const row = document.createElement("div");
-        row.className = "score-row";
+    let current = 0;
+    const answers = [];
 
-        row.innerHTML = `
-          <div class="category">${category}</div>
-          <div class="bar"><div class="fill" style="width: ${percent}%;"></div></div>
-          <div class="percentage">${percent}% (${scores[category]} out of ${totals[category]})</div>
-        `;
+    function showQuestion(index) {
+      container.innerHTML = '';
+      const q = questions[index];
+      const block = document.createElement("div");
+      block.className = "question-block active";
 
-        container.appendChild(row);
-      }
+      block.innerHTML = `<h4>${q.category}</h4><p>${q.text}</p>`;
+
+      options.forEach(opt => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "answer";
+        input.value = opt;
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(" " + opt));
+        block.appendChild(label);
+      });
+
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "btn";
+      nextBtn.type = "button";
+      nextBtn.textContent = index === questions.length - 1 ? "Finish" : "Next";
+
+      nextBtn.onclick = () => {
+        const selected = document.querySelector("input[name='answer']:checked");
+        if (!selected) {
+          alert("Please select an option.");
+          return;
+        }
+        answers.push({ index, value: selected.value });
+        current++;
+        if (current < questions.length) {
+          showQuestion(current);
+        } else {
+          calculateScore();
+        }
+      };
+
+      block.appendChild(nextBtn);
+      container.appendChild(block);
     }
 
-    function goBack() {
-      window.location.href = "index.html";
+    function calculateScore() {
+      let total = 0;
+      let max = 0;
+      const categoryScores = {};
+      const categoryTotals = {};
+
+      answers.forEach(ans => {
+        const q = questions[ans.index];
+        const score = scores[ans.value] * q.weight;
+        total += score;
+        max += q.weight;
+
+        if (!categoryScores[q.category]) {
+          categoryScores[q.category] = 0;
+          categoryTotals[q.category] = 0;
+        }
+
+        categoryScores[q.category] += score;
+        categoryTotals[q.category] += q.weight;
+      });
+
+      localStorage.setItem("categoryScores", JSON.stringify(categoryScores));
+      localStorage.setItem("categoryTotals", JSON.stringify(categoryTotals));
+
+      window.location.href = "result.html";
     }
 
-    window.onload = renderScores;
+    showQuestion(current);
   </script>
 </body>
 </html>
