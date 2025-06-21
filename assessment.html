@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BizVitals 360 - Business Health Assessment</title>
+  <title>BizVitals 360 - Step-by-Step Assessment</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,26 +12,30 @@
       padding: 20px;
     }
     .container {
-      max-width: 900px;
+      max-width: 800px;
       margin: 0 auto;
       background: #fff;
-      padding: 20px;
-      border-radius: 8px;
+      padding: 30px;
+      border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h2, h3 {
+    h2 {
       color: #2b8a3e;
+      text-align: center;
+      margin-bottom: 20px;
     }
-    .question {
-      margin-bottom: 15px;
+    .question-box {
+      margin: 20px 0;
     }
-    .question p {
-      margin-bottom: 5px;
+    .question-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
     }
     .options label {
-      margin-right: 15px;
+      display: block;
+      margin-bottom: 8px;
     }
-    .submit-btn {
+    .next-btn {
       background: #2b8a3e;
       color: white;
       padding: 10px 20px;
@@ -40,42 +44,16 @@
       cursor: pointer;
       margin-top: 20px;
     }
-    .submit-btn:hover {
+    .next-btn:hover {
       background: #237032;
-    }
-    .category-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    .category-tab {
-      padding: 10px 15px;
-      background: #e0f1e7;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .category-tab.active {
-      background: #2b8a3e;
-      color: white;
-      font-weight: bold;
-    }
-    .category-section {
-      display: none;
-    }
-    .category-section.active {
-      display: block;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>BizVitals 360</h2>
-    <div class="category-tabs" id="categoryTabs"></div>
-    <form id="assessmentForm">
-      <div id="questionContainer"></div>
-      <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
-    </form>
+    <h2>BizVitals 360 - Business Health Assessment</h2>
+    <div id="questionSection"></div>
+    <button class="next-btn" onclick="nextQuestion()" id="nextBtn" disabled>Next</button>
   </div>
 
   <script>
@@ -132,84 +110,68 @@
       },
     ];
 
-    const options = ["Yes", "No", "In Process", "Not Applicable"];
     const scores = { "Yes": 1, "In Process": 0.5, "No": 0, "Not Applicable": 0 };
+    const userResponses = [];
+    let currentCategory = 0;
+    let currentQuestion = 0;
+    const section = document.getElementById("questionSection");
+    const nextBtn = document.getElementById("nextBtn");
 
-    const container = document.getElementById("questionContainer");
-    const tabContainer = document.getElementById("categoryTabs");
-
-    categories.forEach((cat, catIndex) => {
-      const tab = document.createElement("div");
-      tab.className = "category-tab";
-      if (catIndex === 0) tab.classList.add("active");
-      tab.textContent = cat.title;
-      tab.addEventListener("click", () => switchCategory(catIndex));
-      tabContainer.appendChild(tab);
-
-      const section = document.createElement("div");
-      section.className = "category-section";
-      if (catIndex === 0) section.classList.add("active");
-
-      const heading = document.createElement("h3");
-      heading.textContent = cat.title;
-      section.appendChild(heading);
-
-      cat.questions.forEach((q, qIndex) => {
-        const div = document.createElement("div");
-        div.className = "question";
-
-        const p = document.createElement("p");
-        p.textContent = q.text;
-        div.appendChild(p);
-
-        const optionsDiv = document.createElement("div");
-        optionsDiv.className = "options";
-
-        options.forEach(opt => {
-          const label = document.createElement("label");
-          const input = document.createElement("input");
-          input.type = "radio";
-          input.name = `${catIndex}-${qIndex}`;
-          input.value = opt;
-          label.appendChild(input);
-          label.appendChild(document.createTextNode(opt));
-          optionsDiv.appendChild(label);
-        });
-
-        div.appendChild(optionsDiv);
-        section.appendChild(div);
-      });
-
-      container.appendChild(section);
-    });
-
-    function switchCategory(index) {
-      document.querySelectorAll(".category-tab").forEach((tab, i) => {
-        tab.classList.toggle("active", i === index);
-      });
-      document.querySelectorAll(".category-section").forEach((sec, i) => {
-        sec.classList.toggle("active", i === index);
-      });
+    function renderQuestion() {
+      nextBtn.disabled = true;
+      const category = categories[currentCategory];
+      const question = category.questions[currentQuestion];
+      section.innerHTML = `
+        <h3>${category.title}</h3>
+        <div class="question-box">
+          <div class="question-text">${question.text}</div>
+          <div class="options">
+            ${Object.keys(scores).map(option => `
+              <label>
+                <input type="radio" name="response" value="${option}" onchange="enableNext()" /> ${option}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
     }
 
-    document.getElementById("assessmentForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      let totalScore = 0;
-      let maxScore = 0;
+    function enableNext() {
+      nextBtn.disabled = false;
+    }
 
-      categories.forEach((cat, catIndex) => {
-        cat.questions.forEach((q, qIndex) => {
-          const name = `${catIndex}-${qIndex}`;
-          const selected = document.querySelector(`input[name='${name}']:checked`);
-          const value = selected ? selected.value : "Not Applicable";
-          const score = scores[value] * q.weight;
-          totalScore += score;
-          maxScore += q.weight;
-        });
+    function nextQuestion() {
+      const selected = document.querySelector('input[name="response"]:checked');
+      const value = selected ? selected.value : "Not Applicable";
+      const question = categories[currentCategory].questions[currentQuestion];
+      userResponses.push({ category: categories[currentCategory].title, score: scores[value] * question.weight, weight: question.weight });
+
+      currentQuestion++;
+      if (currentQuestion >= categories[currentCategory].questions.length) {
+        currentCategory++;
+        currentQuestion = 0;
+      }
+
+      if (currentCategory >= categories.length) {
+        calculateResults();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function calculateResults() {
+      const categoryScores = {};
+      const categoryTotals = {};
+      userResponses.forEach(({ category, score, weight }) => {
+        categoryScores[category] = (categoryScores[category] || 0) + score;
+        categoryTotals[category] = (categoryTotals[category] || 0) + weight;
       });
+      localStorage.setItem("categoryScores", JSON.stringify(categoryScores));
+      localStorage.setItem("categoryTotals", JSON.stringify(categoryTotals));
+      window.location.href = "result.html";
+    }
 
-      alert(`Your score: ${totalScore.toFixed(1)} out of ${maxScore}`);
-    });
+    renderQuestion();
   </script>
 </body>
 </html>
