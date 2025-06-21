@@ -16,51 +16,75 @@
         <button type="submit" id="submitBtn" style="display:none">🚀 Submit</button>
       </div>
     </form>
-
-    <!-- Score Output -->
     <div id="score-output" style="margin-top: 30px; font-size: 1.2rem; font-weight: bold;"></div>
   </div>
 
   <script>
     const groupedQuestions = {
-      "Revenue & Profitability": [
-        "Are you getting more sales or customers than you did last year?",
-        "Are you less dependent on a single customer or product to keep your business running?",
-        "Have your profit margins improved or stayed stable in the past 12 months?",
-        "Could your business stay profitable if revenue dropped by 10%?",
-        "Do you track revenue trends by product, service, or region?",
-        "Is your pricing strategy aligned with customer value and market position?",
-        "Are you regularly reviewing financial reports to assess profit trends?"
-      ],
-      "Cash Flow & Liquidity": [
-        "Can you handle your regular business expenses without borrowing or delays?",
-        "Do you have some money saved to manage slow months or emergencies?",
-        "Do you know how much money is coming in and going out every month?",
-        "Do you consistently generate more cash than you spend each month?",
-        "Can you access funds quickly in case of a cash crunch?",
-        "Do you forecast your cash flow at least monthly?",
-        "Have you separated personal and business finances completely?",
-        "Do you avoid frequent reliance on credit for regular expenses?"
-      ],
-      "Cost & Expense Management": [
-        "Are most of your costs helping your business grow or run better?",
-        "Could you reduce spending quickly if needed, without hurting your business?",
-        "Do you track your spending against a monthly or quarterly budget?",
-        "Do you routinely review and optimize supplier and vendor contracts?",
-        "Have you identified your top 3 cost drivers in the business?",
-        "Do you run a break-even analysis when planning large expenses?",
-        "Do you review expense reports or accounts monthly?"
-      ],
-      "Working Capital & Efficiency": [
-        "Do your customers usually pay you on time?",
-        "Can you pay your suppliers and bills on time without waiting for new income?",
-        "Could your business keep running for a few months if sales dropped suddenly?",
-        "Are most of your invoices paid within 30 days?",
-        "Do you keep enough inventory to meet demand without overstocking?",
-        "Do you review how quickly you convert inventory into sales?",
-        "Are your payable and receivable cycles optimized to avoid cash gaps?",
-        "Do you monitor short-term assets and liabilities monthly?"
-      ]
+      "Revenue & Profitability": {
+        "Sales Growth": [
+          "Are you getting more sales or customers than you did last year?",
+          "Do you track revenue trends by product, service, or region?"
+        ],
+        "Customer Dependence": [
+          "Are you less dependent on a single customer or product?",
+          "Is your pricing strategy aligned with customer value and market position?"
+        ],
+        "Profit Margins": [
+          "Have your profit margins improved or stayed stable in the past 12 months?",
+          "Could your business stay profitable if revenue dropped by 10%?",
+          "Are you regularly reviewing financial reports to assess profit trends?"
+        ]
+      },
+      "Cash Flow & Liquidity": {
+        "Cash Management": [
+          "Can you handle your regular business expenses without borrowing or delays?",
+          "Do you have some money saved to manage slow months or emergencies?"
+        ],
+        "Tracking & Forecasting": [
+          "Do you know how much money is coming in and going out every month?",
+          "Do you forecast your cash flow at least monthly?"
+        ],
+        "Access & Separation": [
+          "Can you access funds quickly in case of a cash crunch?",
+          "Have you separated personal and business finances completely?",
+          "Do you avoid frequent reliance on credit for regular expenses?",
+          "Do you consistently generate more cash than you spend each month?"
+        ]
+      },
+      "Cost & Expense Management": {
+        "Cost Value Analysis": [
+          "Are most of your costs helping your business grow or run better?",
+          "Could you reduce spending quickly if needed, without hurting your business?"
+        ],
+        "Budgeting & Tracking": [
+          "Do you track your spending against a monthly or quarterly budget?",
+          "Do you review expense reports or accounts monthly?"
+        ],
+        "Vendor Review": [
+          "Do you routinely review and optimize supplier and vendor contracts?",
+          "Have you identified your top 3 cost drivers in the business?",
+          "Do you run a break-even analysis when planning large expenses?"
+        ]
+      },
+      "Working Capital & Efficiency": {
+        "Receivables": [
+          "Do your customers usually pay you on time?",
+          "Are most of your invoices paid within 30 days?"
+        ],
+        "Payables & Continuity": [
+          "Can you pay your suppliers and bills on time without waiting for new income?",
+          "Could your business keep running for a few months if sales dropped suddenly?"
+        ],
+        "Inventory & Conversion": [
+          "Do you keep enough inventory to meet demand without overstocking?",
+          "Do you review how quickly you convert inventory into sales?"
+        ],
+        "Cycle Optimization": [
+          "Are your payable and receivable cycles optimized to avoid cash gaps?",
+          "Do you monitor short-term assets and liabilities monthly?"
+        ]
+      }
     };
 
     const scoringMap = { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 };
@@ -70,27 +94,35 @@
       container.innerHTML = "";
       let index = 0;
 
-      for (const category in groupedQuestions) {
-        const header = document.createElement("h3");
-        header.className = "category-title";
-        header.textContent = category;
-        container.appendChild(header);
+      for (const mainCat in groupedQuestions) {
+        const mainTitle = document.createElement("h2");
+        mainTitle.textContent = mainCat;
+        mainTitle.style.color = "#2b8a3e";
+        container.appendChild(mainTitle);
 
-        groupedQuestions[category].forEach(q => {
-          const div = document.createElement("div");
-          div.className = "question-block";
-          if (index === 0) div.classList.add("active");
-          div.innerHTML = `
-            <h2>(${index + 1}) ${q}</h2>
-            <label><input type="radio" name="q${index}" value="Yes"> ✅ Yes</label>
-            <label><input type="radio" name="q${index}" value="In Process"> 🔄 In Process</label>
-            <label><input type="radio" name="q${index}" value="No"> ❌ No</label>
-            <label><input type="radio" name="q${index}" value="N/A"> 🔘 N/A</label>
-            <button type="button" onclick="showNext(${index})">Next</button>
-          `;
-          container.appendChild(div);
-          index++;
-        });
+        const subCats = groupedQuestions[mainCat];
+        for (const subCat in subCats) {
+          const subTitle = document.createElement("h3");
+          subTitle.textContent = "➤ " + subCat;
+          subTitle.style.color = "#444";
+          container.appendChild(subTitle);
+
+          subCats[subCat].forEach(q => {
+            const div = document.createElement("div");
+            div.className = "question-block";
+            if (index === 0) div.classList.add("active");
+            div.innerHTML = `
+              <p><strong>(${index + 1})</strong> ${q}</p>
+              <label><input type="radio" name="q${index}" value="Yes"> ✅ Yes</label>
+              <label><input type="radio" name="q${index}" value="In Process"> 🔄 In Process</label>
+              <label><input type="radio" name="q${index}" value="No"> ❌ No</label>
+              <label><input type="radio" name="q${index}" value="N/A"> 🔘 N/A</label>
+              <button type="button" onclick="showNext(${index})">Next</button>
+            `;
+            container.appendChild(div);
+            index++;
+          });
+        }
       }
     }
 
@@ -123,7 +155,7 @@
       radios.forEach(r => {
         score += scoringMap[r.value];
       });
-      const totalQuestions = Object.values(groupedQuestions).flat().length;
+      const totalQuestions = document.querySelectorAll(".question-block").length;
       const maxScore = totalQuestions * 10;
       const percent = ((score / maxScore) * 100).toFixed(1);
       localStorage.setItem("bizvitals_score", score);
