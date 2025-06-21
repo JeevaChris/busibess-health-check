@@ -43,6 +43,12 @@
     .submit-btn:hover {
       background: #237032;
     }
+    .category-section {
+      display: none;
+    }
+    .category-section.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -50,7 +56,8 @@
     <h2>BizVitals 360</h2>
     <form id="assessmentForm">
       <div id="questionContainer"></div>
-      <button type="submit" class="submit-btn">Submit</button>
+      <button type="button" class="submit-btn" id="nextBtn">Next</button>
+      <button type="submit" class="submit-btn" id="submitBtn" style="display:none;">Submit</button>
     </form>
   </div>
 
@@ -112,9 +119,13 @@
     const scores = { "Yes": 1, "In Process": 0.5, "No": 0, "Not Applicable": 0 };
 
     const container = document.getElementById("questionContainer");
+    let currentCategory = 0;
 
     categories.forEach((cat, catIndex) => {
       const section = document.createElement("div");
+      section.className = "category-section";
+      if (catIndex === 0) section.classList.add("active");
+
       const heading = document.createElement("h3");
       heading.textContent = cat.title;
       section.appendChild(heading);
@@ -146,6 +157,30 @@
       });
 
       container.appendChild(section);
+    });
+
+    const sections = document.querySelectorAll(".category-section");
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      const currentSection = sections[currentCategory];
+      const inputs = currentSection.querySelectorAll("input[type='radio']");
+      const names = new Set();
+      inputs.forEach(input => names.add(input.name));
+      const allAnswered = Array.from(names).every(name => document.querySelector(`input[name='${name}']:checked`));
+
+      if (!allAnswered) {
+        alert("Please answer all questions in this section before proceeding.");
+        return;
+      }
+
+      currentSection.classList.remove("active");
+      currentCategory++;
+      if (currentCategory < sections.length) {
+        sections[currentCategory].classList.add("active");
+        if (currentCategory === sections.length - 1) {
+          document.getElementById("nextBtn").style.display = "none";
+          document.getElementById("submitBtn").style.display = "inline-block";
+        }
+      }
     });
 
     document.getElementById("assessmentForm").addEventListener("submit", function (e) {
