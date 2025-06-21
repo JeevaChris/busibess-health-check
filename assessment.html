@@ -4,59 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BizVitals 360 - Assessment</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f9f6;
-      padding: 0;
-      margin: 0;
-      color: #1a1a1a;
-    }
-    header {
-      background-color: #2b8a3e;
-      color: white;
-      padding: 25px;
-      text-align: center;
-      font-size: 2rem;
-    }
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 30px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-    }
-    .question-block {
-      display: none;
-      margin-bottom: 30px;
-    }
-    .question-block.active {
-      display: block;
-    }
-    h2 {
-      color: #2b8a3e;
-    }
-    label {
-      display: block;
-      margin: 8px 0;
-    }
-    button {
-      background: #2b8a3e;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      font-size: 1rem;
-      border-radius: 8px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    .action-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>Business Health Assessment</header>
@@ -68,6 +16,9 @@
         <button type="submit" id="submitBtn" style="display:none">🚀 Submit</button>
       </div>
     </form>
+
+    <!-- Score Output -->
+    <div id="score-output" style="margin-top: 30px; font-size: 1.2rem; font-weight: bold;"></div>
   </div>
 
   <script>
@@ -75,29 +26,66 @@
       "Revenue & Profitability": [
         "Are you getting more sales or customers than you did last year?",
         "Are you less dependent on a single customer or product to keep your business running?",
-        "Have your profit margins improved or stayed stable in the past 12 months?"
+        "Have your profit margins improved or stayed stable in the past 12 months?",
+        "Could your business stay profitable if revenue dropped by 10%?",
+        "Do you track revenue trends by product, service, or region?",
+        "Is your pricing strategy aligned with customer value and market position?",
+        "Are you regularly reviewing financial reports to assess profit trends?"
       ],
       "Cash Flow & Liquidity": [
         "Can you handle your regular business expenses without borrowing or delays?",
-        "Do you have some money saved to manage slow months or emergencies?"
+        "Do you have some money saved to manage slow months or emergencies?",
+        "Do you know how much money is coming in and going out every month?",
+        "Do you consistently generate more cash than you spend each month?",
+        "Can you access funds quickly in case of a cash crunch?",
+        "Do you forecast your cash flow at least monthly?",
+        "Have you separated personal and business finances completely?",
+        "Do you avoid frequent reliance on credit for regular expenses?"
+      ],
+      "Cost & Expense Management": [
+        "Are most of your costs helping your business grow or run better?",
+        "Could you reduce spending quickly if needed, without hurting your business?",
+        "Do you track your spending against a monthly or quarterly budget?",
+        "Do you routinely review and optimize supplier and vendor contracts?",
+        "Have you identified your top 3 cost drivers in the business?",
+        "Do you run a break-even analysis when planning large expenses?",
+        "Do you review expense reports or accounts monthly?"
+      ],
+      "Working Capital & Efficiency": [
+        "Do your customers usually pay you on time?",
+        "Can you pay your suppliers and bills on time without waiting for new income?",
+        "Could your business keep running for a few months if sales dropped suddenly?",
+        "Are most of your invoices paid within 30 days?",
+        "Do you keep enough inventory to meet demand without overstocking?",
+        "Do you review how quickly you convert inventory into sales?",
+        "Are your payable and receivable cycles optimized to avoid cash gaps?",
+        "Do you monitor short-term assets and liabilities monthly?"
       ]
     };
+
+    const scoringMap = { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 };
 
     function generateQuestions() {
       const container = document.getElementById("questions-container");
       container.innerHTML = "";
       let index = 0;
+
       for (const category in groupedQuestions) {
+        const header = document.createElement("h3");
+        header.className = "category-title";
+        header.textContent = category;
+        container.appendChild(header);
+
         groupedQuestions[category].forEach(q => {
           const div = document.createElement("div");
           div.className = "question-block";
           if (index === 0) div.classList.add("active");
           div.innerHTML = `
             <h2>(${index + 1}) ${q}</h2>
-            <label><input type="radio" name="q${index}" value="Yes"> Yes</label>
-            <label><input type="radio" name="q${index}" value="In Process"> In Process</label>
-            <label><input type="radio" name="q${index}" value="No"> No</label>
-            <label><input type="radio" name="q${index}" value="N/A"> N/A</label>
+            <label><input type="radio" name="q${index}" value="Yes"> ✅ Yes</label>
+            <label><input type="radio" name="q${index}" value="In Process"> 🔄 In Process</label>
+            <label><input type="radio" name="q${index}" value="No"> ❌ No</label>
+            <label><input type="radio" name="q${index}" value="N/A"> 🔘 N/A</label>
             <button type="button" onclick="showNext(${index})">Next</button>
           `;
           container.appendChild(div);
@@ -114,4 +102,37 @@
       if (blocks[current + 1]) {
         blocks[current + 1].classList.add("active");
       } else {
-        document.getElementById("submitBtn").style.display = "inline-block
+        document.getElementById("submitBtn").style.display = "inline-block";
+      }
+    }
+
+    function saveAssessment() {
+      const radios = document.querySelectorAll('input[type="radio"]:checked');
+      let score = 0;
+      radios.forEach(r => {
+        score += scoringMap[r.value];
+      });
+      localStorage.setItem("bizvitals_score", score);
+      alert("✅ Your answers have been saved.");
+    }
+
+    document.getElementById("assessment-section").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const radios = document.querySelectorAll('input[type="radio"]:checked');
+      let score = 0;
+      radios.forEach(r => {
+        score += scoringMap[r.value];
+      });
+      const totalQuestions = Object.values(groupedQuestions).flat().length;
+      const maxScore = totalQuestions * 10;
+      const percent = ((score / maxScore) * 100).toFixed(1);
+      localStorage.setItem("bizvitals_score", score);
+
+      document.getElementById("score-output").innerHTML =
+        `🎯 Your Score: <strong>${score}/${maxScore}</strong> (${percent}%)`;
+    });
+
+    window.onload = generateQuestions;
+  </script>
+</body>
+</html>
