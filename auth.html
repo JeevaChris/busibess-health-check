@@ -10,6 +10,8 @@
   <header>Business Health Assessment</header>
   <div class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</div>
   <div class="container">
+
+    <!-- Login Form -->
     <div id="login-section">
       <h2>Login</h2>
       <label>Email</label>
@@ -20,6 +22,7 @@
       <div class="toggle-link" onclick="showSignup()">Don't have an account? Sign up</div>
     </div>
 
+    <!-- Signup Form -->
     <div id="signup-section" class="hidden">
       <h2>Signup</h2>
       <label>Name</label>
@@ -31,6 +34,15 @@
       <button onclick="signup()">Signup</button>
       <div class="toggle-link" onclick="showLogin()">Already have an account? Login</div>
     </div>
+
+    <!-- Assessment Questions -->
+    <form id="assessment-section" class="hidden">
+      <div id="questions-container"></div>
+      <div class="action-buttons">
+        <button type="button" onclick="saveAssessment()">💾 Save</button>
+        <button type="submit" id="submitBtn" style="display:none">🚀 Submit</button>
+      </div>
+    </form>
   </div>
 
   <script>
@@ -48,12 +60,19 @@
       document.getElementById("login-section").classList.remove("hidden");
     }
 
+    function showAssessment() {
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("signup-section").classList.add("hidden");
+      document.getElementById("assessment-section").classList.remove("hidden");
+      generateQuestions();
+    }
+
     function login() {
       const email = document.getElementById("loginEmail").value;
       const pass = document.getElementById("loginPassword").value;
       const stored = JSON.parse(localStorage.getItem("bizvitals_user") || "{}");
       if (stored.email === email && stored.password === pass) {
-        window.location.href = "index.html"; // Redirect to assessment page
+        showAssessment(); // stay on same page
       } else {
         alert("Invalid credentials");
       }
@@ -68,12 +87,103 @@
       showLogin();
     }
 
-    window.onload = () => {
-      const user = JSON.parse(localStorage.getItem("bizvitals_user") || "{}");
-      if (user.email && user.password) {
-        showLogin();
+    function generateQuestions() {
+      const groupedQuestions = {
+        "Revenue & Profitability": [
+          "Are you getting more sales or customers than you did last year?",
+          "Are you less dependent on a single customer or product to keep your business running?",
+          "Have your profit margins improved or stayed stable in the past 12 months?",
+          "Could your business stay profitable if revenue dropped by 10%?",
+          "Do you track revenue trends by product, service, or region?",
+          "Is your pricing strategy aligned with customer value and market position?",
+          "Are you regularly reviewing financial reports to assess profit trends?"
+        ],
+        "Cash Flow & Liquidity": [
+          "Can you handle your regular business expenses without borrowing or delays?",
+          "Do you have some money saved to manage slow months or emergencies?",
+          "Do you know how much money is coming in and going out every month?",
+          "Do you consistently generate more cash than you spend each month?",
+          "Can you access funds quickly in case of a cash crunch?",
+          "Do you forecast your cash flow at least monthly?",
+          "Have you separated personal and business finances completely?",
+          "Do you avoid frequent reliance on credit for regular expenses?"
+        ]
+      };
+
+      const container = document.getElementById("questions-container");
+      container.innerHTML = "";
+      let qIndex = 0;
+
+      for (const category in groupedQuestions) {
+        const catTitle = document.createElement("div");
+        catTitle.className = "category-title";
+        catTitle.textContent = category;
+        container.appendChild(catTitle);
+
+        groupedQuestions[category].forEach(question => {
+          const div = document.createElement("div");
+          div.className = "question-block";
+          if (qIndex === 0) div.classList.add("active");
+          div.innerHTML = `
+            <h2>(${qIndex + 1}) ${question}</h2>
+            <label><input type="radio" name="q${qIndex}" value="Yes" required> ✅ Yes</label>
+            <label><input type="radio" name="q${qIndex}" value="In Process"> 🔄 In Process</label>
+            <label><input type="radio" name="q${qIndex}" value="No"> ❌ No</label>
+            <label><input type="radio" name="q${qIndex}" value="N/A"> 🔘 N/A</label>
+            <button type="button" onclick="showNext(${qIndex})">Next</button>
+          `;
+          container.appendChild(div);
+          qIndex++;
+        });
       }
-    };
+    }
+
+    function showNext(current) {
+      const currentBlock = document.querySelectorAll('.question-block')[current];
+      const selected = currentBlock.querySelector('input[type="radio"]:checked');
+      if (!selected) return alert("Please select an option to continue.");
+      currentBlock.classList.remove("active");
+      const nextBlock = document.querySelectorAll('.question-block')[current + 1];
+      if (nextBlock) {
+        nextBlock.classList.add("active");
+      } else {
+        document.getElementById("submitBtn").style.display = "inline-block";
+      }
+    }
+
+    function saveAssessment() {
+      const results = {};
+      const total = {};
+      let allRadios = document.querySelectorAll("input[type=radio]:checked");
+      let qCounter = 0;
+
+      const groupedQuestions = {
+        "Revenue & Profitability": 7,
+        "Cash Flow & Liquidity": 8
+      };
+
+      for (const category in groupedQuestions) {
+        const count = groupedQuestions[category];
+        results[category] = 0;
+        total[category] = count * 10;
+
+        for (let i = 0; i < count; i++) {
+          const value = allRadios[qCounter]?.value || "No";
+          results[category] += { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 }[value];
+          qCounter++;
+        }
+      }
+
+      localStorage.setItem("categoryScores", JSON.stringify(results));
+      localStorage.setItem("categoryTotals", JSON.stringify(total));
+      alert("✅ Saved");
+    }
+
+    document.getElementById("assessment-section").addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveAssessment();
+      window.location.href = "result.html";
+    });
   </script>
 </body>
 </html>
