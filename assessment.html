@@ -1,37 +1,141 @@
-Summary of your inputs:
-
-";
-  let count = 1;
-  let score = 0;
-  let maxScore = 0;
-  for (const key in savedAnswers) {
-    const entry = savedAnswers[key];
-    reviewText += `${count++}. ${entry.text}
-   → Your answer: ${entry.value}
-
-`;
-    score += scoringMap[entry.value];
-    maxScore += 10;
-  }
-
-  const percentage = ((score / maxScore) * 100).toFixed(1);
-  reviewText += `Total Score: ${score}/${maxScore} (${percentage}%)
-
-`;
-
-  const finalCheck = confirm(reviewText + "Click OK to submit or Cancel to go back and review.");
-  if (finalCheck) {
-    localStorage.setItem("totalScore", score);
-    localStorage.setItem("maxScore", maxScore);
-    window.location.href = "result.html";
-  }
-}
-  }
-}
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BizVitals 360 - Business Health Assessment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f7f5;
+      margin: 0;
+      padding: 20px;
     }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2, h3 {
+      color: #2b8a3e;
+    }
+    .question {
+      margin-bottom: 15px;
+    }
+    .question p {
+      margin-bottom: 5px;
+    }
+    .options label {
+      margin-right: 15px;
+    }
+    .submit-btn {
+      background: #2b8a3e;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .submit-btn:hover {
+      background: #237032;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>BizVitals 360</h2>
+    <form id="assessmentForm">
+      <div id="questionContainer"></div>
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+  </div>
 
-    window.onload = generateQuestions;
+  <script>
+    const categories = [
+      {
+        title: "Revenue & Profitability",
+        questions: [
+          { text: "Are you getting more sales or customers than last year?", weight: 5 },
+          { text: "Are you less dependent on a single customer or product?", weight: 4 },
+          { text: "Have your profit margins improved or stayed stable in the past 12 months?", weight: 4 },
+          { text: "Could your business stay profitable if revenue dropped by 10%?", weight: 3 },
+          { text: "Do you track revenue trends by product, service, or region?", weight: 3 },
+        ]
+      },
+      {
+        title: "Cash Flow & Liquidity",
+        questions: [
+          { text: "Can you handle your regular business expenses without borrowing or delays?", weight: 4 },
+          { text: "Do you have some money saved to manage slow months or emergencies?", weight: 3 },
+          { text: "Do you know how much money is coming in and going out every month?", weight: 3 },
+          { text: "Do you consistently generate more cash than you spend each month?", weight: 4 },
+          { text: "Can you access funds quickly in case of a cash crunch?", weight: 3 },
+        ]
+      },
+    ];
+
+    const options = ["Yes", "No", "In Process", "Not Applicable"];
+    const scores = { "Yes": 1, "In Process": 0.5, "No": 0, "Not Applicable": 0 };
+
+    const container = document.getElementById("questionContainer");
+
+    categories.forEach((cat, catIndex) => {
+      const section = document.createElement("div");
+      const heading = document.createElement("h3");
+      heading.textContent = cat.title;
+      section.appendChild(heading);
+
+      cat.questions.forEach((q, qIndex) => {
+        const div = document.createElement("div");
+        div.className = "question";
+
+        const p = document.createElement("p");
+        p.textContent = q.text;
+        div.appendChild(p);
+
+        const optionsDiv = document.createElement("div");
+        optionsDiv.className = "options";
+
+        options.forEach(opt => {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = `${catIndex}-${qIndex}`;
+          input.value = opt;
+          label.appendChild(input);
+          label.appendChild(document.createTextNode(opt));
+          optionsDiv.appendChild(label);
+        });
+
+        div.appendChild(optionsDiv);
+        section.appendChild(div);
+      });
+
+      container.appendChild(section);
+    });
+
+    document.getElementById("assessmentForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      let totalScore = 0;
+      let maxScore = 0;
+
+      categories.forEach((cat, catIndex) => {
+        cat.questions.forEach((q, qIndex) => {
+          const name = `${catIndex}-${qIndex}`;
+          const selected = document.querySelector(`input[name='${name}']:checked`);
+          const value = selected ? selected.value : "Not Applicable";
+          const score = scores[value] * q.weight;
+          totalScore += score;
+          maxScore += q.weight;
+        });
+      });
+
+      alert(`Your score: ${totalScore.toFixed(1)} out of ${maxScore}`);
+    });
   </script>
 </body>
 </html>
