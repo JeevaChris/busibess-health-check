@@ -11,7 +11,7 @@
   <div class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</div>
   <div class="container">
 
-    <!-- Login Form -->
+    <!-- Login -->
     <div id="login-section">
       <h2>Login</h2>
       <label>Email</label>
@@ -22,7 +22,7 @@
       <div class="toggle-link" onclick="showSignup()">Don't have an account? Sign up</div>
     </div>
 
-    <!-- Signup Form -->
+    <!-- Signup -->
     <div id="signup-section" class="hidden">
       <h2>Signup</h2>
       <label>Name</label>
@@ -35,7 +35,7 @@
       <div class="toggle-link" onclick="showLogin()">Already have an account? Login</div>
     </div>
 
-    <!-- Assessment Questions -->
+    <!-- Assessment -->
     <form id="assessment-section" class="hidden">
       <div id="questions-container"></div>
       <div class="action-buttons">
@@ -43,6 +43,7 @@
         <button type="submit" id="submitBtn" style="display:none">🚀 Submit</button>
       </div>
     </form>
+
   </div>
 
   <script>
@@ -72,7 +73,7 @@
       const pass = document.getElementById("loginPassword").value;
       const stored = JSON.parse(localStorage.getItem("bizvitals_user") || "{}");
       if (stored.email === email && stored.password === pass) {
-        showAssessment(); // stay on same page
+        showAssessment();
       } else {
         alert("Invalid credentials");
       }
@@ -184,6 +185,13 @@
       saveAssessment();
       window.location.href = "result.html";
     });
+
+    // ✅ Force show login on load
+    window.onload = () => {
+      document.getElementById("login-section").classList.remove("hidden");
+      document.getElementById("signup-section").classList.add("hidden");
+      document.getElementById("assessment-section").classList.add("hidden");
+    };
   </script>
 </body>
 </html>
