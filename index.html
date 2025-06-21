@@ -1,137 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BizVitals 360 - Business Health Assessment</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BizVitals 360 - Home</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .dashboard {
+      text-align: center;
+      padding: 40px;
+    }
+    .dashboard h1 {
+      color: #2b8a3e;
+      margin-bottom: 20px;
+    }
+    .dashboard p {
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+    .dashboard button {
+      background: #2b8a3e;
+      color: white;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .dashboard button:hover {
+      background: #21622d;
+    }
+  </style>
 </head>
 <body>
-  <header>Business Health Assessment</header>
-  <div class="container">
-    <form id="healthForm">
-      <div id="questions-container"></div>
-      <div class="action-buttons">
-        <button type="button" id="saveBtn">💾 Save Progress</button>
-        <button type="submit" id="submitBtn" style="display:none">🚀 Submit & View Score</button>
-      </div>
-    </form>
+  <header>Welcome to BizVitals 360</header>
+  <div class="container dashboard">
+    <h1>Business Health Self-Assessment</h1>
+    <p>Evaluate the financial and operational wellness of your business with our step-by-step tool.</p>
+    <button onclick="location.href='auth.html'">📝 Start Assessment</button>
+    <button onclick="location.href='result.html'">📊 View Results</button>
   </div>
-
-  <script>
-    const groupedQuestions = {
-      "Revenue & Profitability": [
-        "Are you getting more sales or customers than you did last year?",
-        "Are you less dependent on a single customer or product to keep your business running?",
-        "Have your profit margins improved or stayed stable in the past 12 months?",
-        "Could your business stay profitable if revenue dropped by 10%?",
-        "Do you track revenue trends by product, service, or region?",
-        "Is your pricing strategy aligned with customer value and market position?",
-        "Are you regularly reviewing financial reports to assess profit trends?"
-      ],
-      "Cash Flow & Liquidity": [
-        "Can you handle your regular business expenses without borrowing or delays?",
-        "Do you have some money saved to manage slow months or emergencies?",
-        "Do you know how much money is coming in and going out every month?",
-        "Do you consistently generate more cash than you spend each month?",
-        "Can you access funds quickly in case of a cash crunch?",
-        "Do you forecast your cash flow at least monthly?",
-        "Have you separated personal and business finances completely?",
-        "Do you avoid frequent reliance on credit for regular expenses?"
-      ],
-      "Cost & Expense Management": [
-        "Are most of your costs helping your business grow or run better?",
-        "Could you reduce spending quickly if needed, without hurting your business?",
-        "Do you track your spending against a monthly or quarterly budget?",
-        "Do you routinely review and optimize supplier and vendor contracts?",
-        "Have you identified your top 3 cost drivers in the business?",
-        "Do you run a break-even analysis when planning large expenses?",
-        "Do you review expense reports or accounts monthly?"
-      ],
-      "Working Capital & Efficiency": [
-        "Do your customers usually pay you on time?",
-        "Can you pay your suppliers and bills on time without waiting for new income?",
-        "Could your business keep running for a few months if sales dropped suddenly?",
-        "Are most of your invoices paid within 30 days?",
-        "Do you keep enough inventory to meet demand without overstocking?",
-        "Do you review how quickly you convert inventory into sales?",
-        "Are your payable and receivable cycles optimized to avoid cash gaps?",
-        "Do you monitor short-term assets and liabilities monthly?"
-      ]
-    };
-
-    const scoringMap = { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 };
-    const container = document.getElementById("questions-container");
-    let qIndex = 0;
-
-    for (const category in groupedQuestions) {
-      const catTitle = document.createElement("div");
-      catTitle.className = "category-title";
-      catTitle.textContent = category;
-      container.appendChild(catTitle);
-
-      groupedQuestions[category].forEach(question => {
-        const div = document.createElement("div");
-        div.className = "question-block";
-        if (qIndex === 0) div.classList.add("active");
-        div.innerHTML = `
-          <h2>(${qIndex + 1}) ${question}</h2>
-          <label><input type="radio" name="q${qIndex}" value="Yes" required> ✅ Yes</label>
-          <label><input type="radio" name="q${qIndex}" value="In Process"> 🔄 In Process</label>
-          <label><input type="radio" name="q${qIndex}" value="No"> ❌ No</label>
-          <label><input type="radio" name="q${qIndex}" value="N/A"> 🔘 N/A</label>
-          <button type="button" onclick="showNext(${qIndex})">Next</button>
-        `;
-        container.appendChild(div);
-        qIndex++;
-      });
-    }
-
-    function showNext(current) {
-      const currentBlock = document.querySelectorAll('.question-block')[current];
-      const selected = currentBlock.querySelector('input[type="radio"]:checked');
-      if (!selected) return alert("Please select an option to continue.");
-      currentBlock.classList.remove("active");
-      const nextBlock = document.querySelectorAll('.question-block')[current + 1];
-      if (nextBlock) {
-        nextBlock.classList.add("active");
-      } else {
-        document.getElementById("submitBtn").style.display = "inline-block";
-      }
-    }
-
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      const answers = {};
-      const radios = document.querySelectorAll("input[type=radio]:checked");
-      radios.forEach(radio => {
-        answers[radio.name] = radio.value;
-      });
-      localStorage.setItem("savedAnswers", JSON.stringify(answers));
-      alert("✅ Progress saved locally.");
-    });
-
-    document.getElementById("healthForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const categoryScores = {};
-      const categoryTotals = {};
-      let allRadios = document.querySelectorAll("input[type=radio]:checked");
-      let qCounter = 0;
-
-      for (const category in groupedQuestions) {
-        const questions = groupedQuestions[category];
-        categoryScores[category] = 0;
-        categoryTotals[category] = questions.length * 10;
-        for (let i = 0; i < questions.length; i++) {
-          const value = allRadios[qCounter].value;
-          categoryScores[category] += scoringMap[value];
-          qCounter++;
-        }
-      }
-
-      localStorage.setItem("categoryScores", JSON.stringify(categoryScores));
-      localStorage.setItem("categoryTotals", JSON.stringify(categoryTotals));
-      window.location.href = "result.html";
-    });
-  </script>
 </body>
 </html>
