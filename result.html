@@ -4,7 +4,71 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BizVitals 360 - Assessment Results</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f9f6;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2b8a3e;
+      color: white;
+      padding: 15px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #2b8a3e;
+    }
+    .score-row {
+      margin: 20px 0;
+    }
+    .category {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .bar {
+      background: #e0f1e7;
+      border-radius: 6px;
+      overflow: hidden;
+      height: 20px;
+    }
+    .fill {
+      background: #2b8a3e;
+      height: 100%;
+      transition: width 0.5s ease;
+    }
+    .percentage {
+      text-align: right;
+      margin-top: 5px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 20px;
+      background: #2b8a3e;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #237032;
+    }
+  </style>
 </head>
 <body>
   <header>Assessment Report</header>
@@ -19,6 +83,11 @@
       const scores = JSON.parse(localStorage.getItem("categoryScores") || "{}");
       const totals = JSON.parse(localStorage.getItem("categoryTotals") || "{}");
       const container = document.getElementById("score-details");
+
+      if (Object.keys(scores).length === 0) {
+        container.innerHTML = '<p>No score data found. Please complete the assessment first.</p>';
+        return;
+      }
 
       for (const category in scores) {
         const percent = ((scores[category] / totals[category]) * 100).toFixed(1);
