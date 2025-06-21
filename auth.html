@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BizVitals 360 - Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -34,13 +33,13 @@
 
   <script>
     function showSignup() {
-      document.getElementById("login-section").classList.add("hidden");
-      document.getElementById("signup-section").classList.remove("hidden");
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("signup-section").style.display = "block";
     }
 
     function showLogin() {
-      document.getElementById("signup-section").classList.add("hidden");
-      document.getElementById("login-section").classList.remove("hidden");
+      document.getElementById("signup-section").style.display = "none";
+      document.getElementById("login-section").style.display = "block";
     }
 
     function signup() {
@@ -56,9 +55,8 @@
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
       const stored = JSON.parse(localStorage.getItem("biz_user") || "{}");
-
       if (stored.email === email && stored.password === password) {
-        window.location.href = "assessment.html"; // ✅ Go to question sheet
+        window.location.href = "assessment.html";
       } else {
         alert("Invalid credentials!");
       }
