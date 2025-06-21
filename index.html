@@ -39,7 +39,19 @@
     <h1>Business Health Self-Assessment</h1>
     <p>Evaluate the financial and operational wellness of your business with our step-by-step tool.</p>
     <button onclick="location.href='auth.html'">📝 Start Assessment</button>
-    <button onclick="location.href='result.html'">📊 View Results</button>
+    <button onclick="viewResults()">📊 View Results</button>
   </div>
+  <script>
+    function viewResults() {
+      const categoryScores = localStorage.getItem("categoryScores");
+      const categoryTotals = localStorage.getItem("categoryTotals");
+
+      if (categoryScores && categoryTotals) {
+        window.location.href = "result.html";
+      } else {
+        alert("Please complete the assessment first.");
+      }
+    }
+  </script>
 </body>
 </html>
