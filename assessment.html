@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BizVitals 360 - Assessment</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>Business Health Assessment</header>
@@ -93,6 +93,7 @@
       const container = document.getElementById("questions-container");
       container.innerHTML = "";
       let index = 0;
+      const questionBlocks = [];
 
       for (const mainCat in groupedQuestions) {
         const mainTitle = document.createElement("h2");
@@ -110,6 +111,7 @@
           subCats[subCat].forEach(q => {
             const div = document.createElement("div");
             div.className = "question-block";
+            div.setAttribute("data-index", index);
             if (index === 0) div.classList.add("active");
             div.innerHTML = `
               <p><strong>(${index + 1})</strong> ${q}</p>
@@ -119,6 +121,7 @@
               <label><input type="radio" name="q${index}" value="N/A"> 🔘 N/A</label>
               <button type="button" onclick="showNext(${index})">Next</button>
             `;
+            questionBlocks.push(div);
             container.appendChild(div);
             index++;
           });
