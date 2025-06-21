@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BizVitals 360 - Assessment</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f9f6;
+      padding: 0;
+      margin: 0;
+      color: #1a1a1a;
+    }
+    header {
+      background-color: #2b8a3e;
+      color: white;
+      padding: 25px;
+      text-align: center;
+      font-size: 2rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .question-block {
+      display: none;
+      margin-bottom: 30px;
+    }
+    .question-block.active {
+      display: block;
+    }
+    h2 {
+      color: #2b8a3e;
+    }
+    label {
+      display: block;
+      margin: 8px 0;
+    }
+    button {
+      background: #2b8a3e;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 1rem;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <header>Business Health Assessment</header>
+  <div class="container">
+    <form id="assessment-section">
+      <div id="questions-container"></div>
+      <div class="action-buttons">
+        <button type="button" onclick="saveAssessment()">💾 Save</button>
+        <button type="submit" id="submitBtn" style="display:none">🚀 Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const groupedQuestions = {
+      "Revenue & Profitability": [
+        "Are you getting more sales or customers than you did last year?",
+        "Are you less dependent on a single customer or product to keep your business running?",
+        "Have your profit margins improved or stayed stable in the past 12 months?"
+      ],
+      "Cash Flow & Liquidity": [
+        "Can you handle your regular business expenses without borrowing or delays?",
+        "Do you have some money saved to manage slow months or emergencies?"
+      ]
+    };
+
+    function generateQuestions() {
+      const container = document.getElementById("questions-container");
+      container.innerHTML = "";
+      let index = 0;
+      for (const category in groupedQuestions) {
+        groupedQuestions[category].forEach(q => {
+          const div = document.createElement("div");
+          div.className = "question-block";
+          if (index === 0) div.classList.add("active");
+          div.innerHTML = `
+            <h2>(${index + 1}) ${q}</h2>
+            <label><input type="radio" name="q${index}" value="Yes"> Yes</label>
+            <label><input type="radio" name="q${index}" value="In Process"> In Process</label>
+            <label><input type="radio" name="q${index}" value="No"> No</label>
+            <label><input type="radio" name="q${index}" value="N/A"> N/A</label>
+            <button type="button" onclick="showNext(${index})">Next</button>
+          `;
+          container.appendChild(div);
+          index++;
+        });
+      }
+    }
+
+    function showNext(current) {
+      const blocks = document.querySelectorAll('.question-block');
+      const selected = blocks[current].querySelector('input[type="radio"]:checked');
+      if (!selected) return alert("Please select an option.");
+      blocks[current].classList.remove("active");
+      if (blocks[current + 1]) {
+        blocks[current + 1].classList.add("active");
+      } else {
+        document.getElementById("submitBtn").style.display = "inline-block
