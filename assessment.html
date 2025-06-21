@@ -55,16 +55,20 @@
       display: block;
       margin-bottom: 8px;
     }
-    .next-btn {
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .btn {
       background: #2b8a3e;
       color: white;
       padding: 10px 20px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 20px;
     }
-    .next-btn:hover {
+    .btn:hover {
       background: #237032;
     }
   </style>
@@ -74,7 +78,11 @@
     <h2>BizVitals 360 - Business Health Assessment</h2>
     <div class="category-status" id="categoryStatus"></div>
     <div id="questionSection"></div>
-    <button class="next-btn" onclick="nextQuestion()" id="nextBtn" disabled>Next</button>
+    <div class="btn-group">
+      <button class="btn" onclick="saveProgress()">Save</button>
+      <button class="btn" onclick="nextQuestion()" id="nextBtn" disabled>Next</button>
+      <button class="btn" onclick="submitAssessment()" id="submitBtn" style="display:none;">Submit</button>
+    </div>
   </div>
 
   <script>
@@ -137,6 +145,7 @@
     let currentQuestion = 0;
     const section = document.getElementById("questionSection");
     const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
     const statusDiv = document.getElementById("categoryStatus");
 
     function renderCategoryBadges() {
@@ -152,6 +161,7 @@
     function renderQuestion() {
       renderCategoryBadges();
       nextBtn.disabled = true;
+      submitBtn.style.display = "none";
       const category = categories[currentCategory];
       const question = category.questions[currentQuestion];
       section.innerHTML = `
@@ -186,10 +196,20 @@
       }
 
       if (currentCategory >= categories.length) {
-        calculateResults();
+        nextBtn.style.display = "none";
+        submitBtn.style.display = "inline-block";
       } else {
         renderQuestion();
       }
+    }
+
+    function submitAssessment() {
+      calculateResults();
+    }
+
+    function saveProgress() {
+      localStorage.setItem("savedResponses", JSON.stringify(userResponses));
+      alert("Progress saved successfully.");
     }
 
     function calculateResults() {
