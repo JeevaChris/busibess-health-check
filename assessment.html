@@ -1,177 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BizVitals 360 - Assessment</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>Business Health Assessment</header>
-  <div class="container">
-    <form id="assessment-section">
-      <div id="questions-container"></div>
-      <div class="category-buttons" id="submit-container" style="display: none; text-align: center; margin-top: 30px;">
-        <button type="button" onclick="submitAssessment()">🚀 Submit Assessment</button>
-      </div>
-    </form>
-  </div>
+Summary of your inputs:
 
-  <script>
-    const groupedQuestions = {
-      "Revenue & Profitability": {
-        "Sales & Growth": [
-          "Are you getting more sales or customers than you did last year?",
-          "Are you less dependent on a single customer or product to keep your business running?",
-          "Have your profit margins improved or stayed stable in the past 12 months?",
-          "Could your business stay profitable if revenue dropped by 10%?",
-          "Do you track revenue trends by product, service, or region?",
-          "Is your pricing strategy aligned with customer value and market position?",
-          "Are you regularly reviewing financial reports to assess profit trends?"
-        ]
-      },
-      "Cash Flow & Liquidity": {
-        "Cash Stability": [
-          "Can you handle your regular business expenses without borrowing or delays?",
-          "Do you have some money saved to manage slow months or emergencies?",
-          "Do you know how much money is coming in and going out every month?",
-          "Do you consistently generate more cash than you spend each month?",
-          "Can you access funds quickly in case of a cash crunch?",
-          "Do you forecast your cash flow at least monthly?",
-          "Have you separated personal and business finances completely?",
-          "Do you avoid frequent reliance on credit for regular expenses?"
-        ]
-      },
-      "Cost & Expense Management": {
-        "Spending Efficiency": [
-          "Are most of your costs helping your business grow or run better?",
-          "Could you reduce spending quickly if needed, without hurting your business?",
-          "Do you track your spending against a monthly or quarterly budget?",
-          "Do you routinely review and optimize supplier and vendor contracts?",
-          "Have you identified your top 3 cost drivers in the business?",
-          "Do you run a break-even analysis when planning large expenses?",
-          "Do you review expense reports or accounts monthly?"
-        ]
-      },
-      "Working Capital & Efficiency": {
-        "Receivables & Payables": [
-          "Do your customers usually pay you on time?",
-          "Can you pay your suppliers and bills on time without waiting for new income?",
-          "Could your business keep running for a few months if sales dropped suddenly?",
-          "Are most of your invoices paid within 30 days?",
-          "Do you keep enough inventory to meet demand without overstocking?",
-          "Do you review how quickly you convert inventory into sales?",
-          "Are your payable and receivable cycles optimized to avoid cash gaps?",
-          "Do you monitor short-term assets and liabilities monthly?"
-        ]
-      }
-    };
+";
+  let count = 1;
+  let score = 0;
+  let maxScore = 0;
+  for (const key in savedAnswers) {
+    const entry = savedAnswers[key];
+    reviewText += `${count++}. ${entry.text}
+   → Your answer: ${entry.value}
 
-    const scoringMap = { "Yes": 10, "In Process": 5, "No": 0, "N/A": 0 };
-    const categoryKeys = Object.keys(groupedQuestions);
-    let currentCategoryIndex = 0;
-    let allQuestions = [];
-    let currentQuestionIndex = 0;
+`;
+    score += scoringMap[entry.value];
+    maxScore += 10;
+  }
 
-    function generateQuestions() {
-      const category = categoryKeys[currentCategoryIndex];
-      const subcats = groupedQuestions[category];
-      const container = document.getElementById("questions-container");
-      container.innerHTML = "";
-      allQuestions = [];
-      currentQuestionIndex = 0;
+  const percentage = ((score / maxScore) * 100).toFixed(1);
+  reviewText += `Total Score: ${score}/${maxScore} (${percentage}%)
 
-      const header = document.createElement("h2");
-      header.textContent = category;
-      container.appendChild(header);
+`;
 
-      for (const subcat in subcats) {
-        const subHeader = document.createElement("div");
-        subHeader.className = "subcategory-title";
-        subHeader.textContent = subcat;
-        container.appendChild(subHeader);
-
-        subcats[subcat].forEach((q, i) => {
-          const div = document.createElement("div");
-          div.className = "question-block";
-          div.innerHTML = `
-            <p><strong>Q${allQuestions.length + 1}:</strong> ${q}</p>
-            <label><input type="radio" name="q${currentCategoryIndex}_${allQuestions.length}" value="Yes"> ✅ Yes</label>
-            <label><input type="radio" name="q${currentCategoryIndex}_${allQuestions.length}" value="In Process"> 🔄 In Process</label>
-            <label><input type="radio" name="q${currentCategoryIndex}_${allQuestions.length}" value="No"> ❌ No</label>
-            <label><input type="radio" name="q${currentCategoryIndex}_${allQuestions.length}" value="N/A"> 🔘 N/A</label>
-            <button type="button" onclick="nextQuestion(${allQuestions.length})">Next</button>
-          `;
-          container.appendChild(div);
-          allQuestions.push(div);
-        });
-      }
-
-      const saveBtn = document.createElement("div");
-      saveBtn.className = "category-buttons";
-      saveBtn.innerHTML = `
-        <button type="button" onclick="saveAssessment()">💾 Save </button>
-      `;
-      container.appendChild(saveBtn);
-
-      allQuestions[0].classList.add("active");
-    }
-
-    function nextQuestion(index) {
-      const currentBlock = allQuestions[index];
-      const selected = currentBlock.querySelector('input[type="radio"]:checked');
-      if (!selected) return alert("Please select an option.");
-      currentBlock.classList.remove("active");
-
-      const qText = currentBlock.querySelector('p')?.textContent || "Untitled Question";
-      const category = categoryKeys[currentCategoryIndex];
-      const qKey = `q${currentCategoryIndex}_${index}`;
-      const savedAnswers = JSON.parse(localStorage.getItem("bizvitals_answers") || "{}");
-      savedAnswers[qKey] = {
-        value: selected.value,
-        text: qText,
-        category: category
-      };
-      localStorage.setItem("bizvitals_answers", JSON.stringify(savedAnswers));
-
-      if (index + 1 < allQuestions.length) {
-        allQuestions[index + 1].classList.add("active");
-        allQuestions[index + 1].scrollIntoView({ behavior: 'smooth' });
-      } else {
-        currentCategoryIndex++;
-        if (currentCategoryIndex < categoryKeys.length) {
-          generateQuestions();
-        } else {
-          document.getElementById("submit-container").style.display = "block";
-        }
-      }
-    }
-
-    function saveAssessment() {
-      alert("✅ Your responses for this category have been saved.");
-    }
-
-    function submitAssessment() {
-      const confirmed = confirm("Are you sure you want to submit your assessment? You won’t be able to change your answers.");
-      if (!confirmed) return;
-
-      const savedAnswers = JSON.parse(localStorage.getItem("bizvitals_answers") || "{}");
-      if (Object.keys(savedAnswers).length === 0) {
-        alert("No answers saved. Please complete the assessment first.");
-        return;
-      }
-
-      let reviewText = "You have completed the assessment.\n\nSummary of your inputs:\n";
-      let count = 1;
-      for (const key in savedAnswers) {
-        const entry = savedAnswers[key];
-        reviewText += count++ + ". " + entry.text + "\n   → Your answer: " + entry.value + "\n\n";
-      }
-
-      const finalCheck = confirm(reviewText + "Click OK to submit or Cancel to go back and review.");
-      if (finalCheck) {
-        window.location.href = "result.html";
+  const finalCheck = confirm(reviewText + "Click OK to submit or Cancel to go back and review.");
+  if (finalCheck) {
+    localStorage.setItem("totalScore", score);
+    localStorage.setItem("maxScore", maxScore);
+    window.location.href = "result.html";
+  }
+}
+  }
+}
       }
     }
 
