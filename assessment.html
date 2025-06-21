@@ -5,33 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BizVitals 360 - Assessment</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    .subcategory-title {
-      font-size: 1.1rem;
-      color: #1a5d3f;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      background: #e6f4ea;
-      padding: 8px;
-      border-left: 4px solid #2b8a3e;
-    }
-    .question-block {
-      display: none;
-    }
-    .question-block.active {
-      display: block;
-    }
-    .category-buttons {
-      text-align: right;
-      margin-top: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>Business Health Assessment</header>
   <div class="container">
     <form id="assessment-section">
       <div id="questions-container"></div>
+      <div class="category-buttons" id="submit-container" style="display: none; text-align: center; margin-top: 30px;">
+        <button type="button" onclick="submitAssessment()">🚀 Submit Assessment</button>
+      </div>
     </form>
   </div>
 
@@ -128,7 +111,7 @@
       const saveBtn = document.createElement("div");
       saveBtn.className = "category-buttons";
       saveBtn.innerHTML = `
-        <button type="button" onclick="saveAssessment()">💾 Save This Category</button>
+        <button type="button" onclick="saveAssessment()">💾 Save </button>
       `;
       container.appendChild(saveBtn);
 
@@ -160,13 +143,36 @@
         if (currentCategoryIndex < categoryKeys.length) {
           generateQuestions();
         } else {
-          window.location.href = "result.html";
+          document.getElementById("submit-container").style.display = "block";
         }
       }
     }
 
     function saveAssessment() {
       alert("✅ Your responses for this category have been saved.");
+    }
+
+    function submitAssessment() {
+      const confirmed = confirm("Are you sure you want to submit your assessment? You won’t be able to change your answers.");
+      if (!confirmed) return;
+
+      const savedAnswers = JSON.parse(localStorage.getItem("bizvitals_answers") || "{}");
+      if (Object.keys(savedAnswers).length === 0) {
+        alert("No answers saved. Please complete the assessment first.");
+        return;
+      }
+
+      let reviewText = "You have completed the assessment.\n\nSummary of your inputs:\n";
+      let count = 1;
+      for (const key in savedAnswers) {
+        const entry = savedAnswers[key];
+        reviewText += count++ + ". " + entry.text + "\n   → Your answer: " + entry.value + "\n\n";
+      }
+
+      const finalCheck = confirm(reviewText + "Click OK to submit or Cancel to go back and review.");
+      if (finalCheck) {
+        window.location.href = "result.html";
+      }
     }
 
     window.onload = generateQuestions;
