@@ -12,7 +12,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
       background: #fff;
       padding: 30px;
@@ -23,6 +23,26 @@
       color: #2b8a3e;
       text-align: center;
       margin-bottom: 20px;
+    }
+    .category-status {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .category-badge {
+      padding: 8px 12px;
+      background: #e0f1e7;
+      border-radius: 6px;
+      color: #2b8a3e;
+      font-weight: bold;
+      border: 2px solid transparent;
+    }
+    .category-badge.active {
+      background: #2b8a3e;
+      color: #fff;
+      border-color: #2b8a3e;
     }
     .question-box {
       margin: 20px 0;
@@ -52,6 +72,7 @@
 <body>
   <div class="container">
     <h2>BizVitals 360 - Business Health Assessment</h2>
+    <div class="category-status" id="categoryStatus"></div>
     <div id="questionSection"></div>
     <button class="next-btn" onclick="nextQuestion()" id="nextBtn" disabled>Next</button>
   </div>
@@ -116,8 +137,20 @@
     let currentQuestion = 0;
     const section = document.getElementById("questionSection");
     const nextBtn = document.getElementById("nextBtn");
+    const statusDiv = document.getElementById("categoryStatus");
+
+    function renderCategoryBadges() {
+      statusDiv.innerHTML = "";
+      categories.forEach((cat, i) => {
+        const div = document.createElement("div");
+        div.className = "category-badge" + (i === currentCategory ? " active" : "");
+        div.textContent = cat.title;
+        statusDiv.appendChild(div);
+      });
+    }
 
     function renderQuestion() {
+      renderCategoryBadges();
       nextBtn.disabled = true;
       const category = categories[currentCategory];
       const question = category.questions[currentQuestion];
