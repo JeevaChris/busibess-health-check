@@ -1,108 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BizVitals 360 - Results</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f5f2;
-      margin: 0;
-      padding: 0;
-      color: #222;
-    }
-    header {
-      background-color: #2b8a3e;
-      color: white;
-      padding: 25px 20px;
-      text-align: center;
-      font-size: 2rem;
-      font-weight: bold;
-    }
-    .container {
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 30px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
-    h2 {
-      color: #2b8a3e;
-      margin-top: 0;
-    }
-    .score-block {
-      margin: 20px 0;
-      padding: 15px;
-      border-left: 5px solid #2b8a3e;
-      background: #f9fdf9;
-      border-radius: 8px;
-    }
-    .score {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-    .remark {
-      margin-top: 8px;
-      font-style: italic;
-      color: #555;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-    }
-    button {
-      background-color: #2b8a3e;
-      color: white;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BizVitals 360 - Assessment Results</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>Assessment Results</header>
-  <div class="container" id="results-container">
-    <!-- Results will be injected here -->
-  </div>
-  <div class="footer">
-    <button onclick="location.href='index.html'">🔙 Back to Home</button>
+  <header>Assessment Report</header>
+  <div class="container">
+    <h2>Your Business Health Summary</h2>
+    <div id="score-details"></div>
+    <button class="btn" onclick="goBack()">🔙 Back to Dashboard</button>
   </div>
 
   <script>
-    function getRemark(percentage) {
-      if (percentage >= 80) return "Strong performance. Keep up the good work!";
-      if (percentage >= 50) return "Moderate performance. Room for improvement.";
-      return "Needs attention. Focus on strengthening this area.";
-    }
+    function renderScores() {
+      const scores = JSON.parse(localStorage.getItem("categoryScores") || "{}");
+      const totals = JSON.parse(localStorage.getItem("categoryTotals") || "{}");
+      const container = document.getElementById("score-details");
 
-    const results = JSON.parse(localStorage.getItem("categoryScores") || "{}");
-    const totals = JSON.parse(localStorage.getItem("categoryTotals") || "{}");
+      for (const category in scores) {
+        const percent = ((scores[category] / totals[category]) * 100).toFixed(1);
 
-    const container = document.getElementById("results-container");
+        const row = document.createElement("div");
+        row.className = "score-row";
 
-    if (!Object.keys(results).length) {
-      container.innerHTML = "<p>No assessment data found. Please complete the assessment first.</p>";
-    } else {
-      container.innerHTML = "<h2>Your Business Health Overview</h2>";
-      for (const category in results) {
-        const score = results[category];
-        const total = totals[category];
-        const percent = Math.round((score / total) * 100);
-        const remark = getRemark(percent);
-
-        const block = document.createElement("div");
-        block.className = "score-block";
-        block.innerHTML = `
-          <div class="score">${category}: ${percent}%</div>
-          <div class="remark">${remark}</div>
+        row.innerHTML = `
+          <div class="category">${category}</div>
+          <div class="bar"><div class="fill" style="width: ${percent}%;"></div></div>
+          <div class="percentage">${percent}% (${scores[category]} out of ${totals[category]})</div>
         `;
-        container.appendChild(block);
+
+        container.appendChild(row);
       }
     }
+
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
+    window.onload = renderScores;
   </script>
 </body>
 </html>
